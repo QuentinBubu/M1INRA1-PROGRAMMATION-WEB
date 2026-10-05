@@ -46,7 +46,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $titre = 'Connexion';
-require __DIR__ . '/header.php';
+require __DIR__ . '/templates/header.php';
 ?>
 <form method="post" novalidate>
   <?= csrf_champ() ?>
@@ -59,4 +59,4 @@ require __DIR__ . '/header.php';
   <button type="submit">Se connecter</button>
 </form>
 <p class="lien">Pas de compte ? <a href="inscription.php">S'inscrire</a></p>
-<?php require __DIR__ . '/footer.php'; ?>
+<?php require __DIR__ . '/templates/footer.php'; ?>

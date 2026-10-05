@@ -31,7 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $titre = 'Inscription';
-require __DIR__ . '/header.php';
+require __DIR__ . '/templates/header.php';
 ?>
 <form method="post" autocomplete="off" novalidate>
   <?= csrf_champ() ?>
@@ -50,4 +50,4 @@ require __DIR__ . '/header.php';
   <button type="submit">Créer mon compte</button>
 </form>
 <p class="lien">Déjà inscrit ? <a href="connexion.php">Se connecter</a></p>
-<?php require __DIR__ . '/footer.php'; ?>
+<?php require __DIR__ . '/templates/footer.php'; ?>

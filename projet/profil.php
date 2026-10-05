@@ -14,7 +14,7 @@ if (!$u) {
 }
 
 $titre = 'Mon profil';
-require __DIR__ . '/header.php';
+require __DIR__ . '/templates/header.php';
 ?>
 <p>Bonjour <strong><?= h($u['user_login']) ?></strong> !</p>
 <ul>
@@ -26,4 +26,4 @@ require __DIR__ . '/header.php';
   <?= csrf_champ() ?>
   <button type="submit">Se déconnecter</button>
 </form>
-<?php require __DIR__ . '/footer.php'; ?>
+<?php require __DIR__ . '/templates/footer.php'; ?>
