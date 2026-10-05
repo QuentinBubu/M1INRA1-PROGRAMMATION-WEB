@@ -27,6 +27,20 @@ class ProductEntity
     }
 
     /**
+     * Définit l'identifiant du produit.
+     *
+     * @param int|null $p_id Identifiant du produit.
+     *
+     * @return self Entité courante.
+     */
+    public function setPId(?int $p_id): self
+    {
+        $this->p_id = $p_id;
+
+        return $this;
+    }
+
+    /**
      * Retourne la désignation du produit.
      *
      * @return string Désignation du produit.
