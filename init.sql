@@ -32,6 +32,7 @@ CREATE TABLE produit (
   url_image_p    TEXT NULL,
   promo_p        TINYINT UNSIGNED NULL,
   categorie_id   INT NOT NULL,
+  is_deleted     TINYINT NOT NULL DEFAULT 0,
   PRIMARY KEY (p_id),
   CONSTRAINT chk_stock CHECK (stock_p >= 0),
   CONSTRAINT chk_promo CHECK (promo_p IS NULL OR promo_p BETWEEN 1 AND 100),

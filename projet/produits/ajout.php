@@ -22,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'categorie_id' => $categorie_id
     ]);
 
-    $st = db()->prepare('INSERT INTO prix_historique (produit_id, prix_ht) VALUES (:produit_id, :prix_ht)');
+    $st = db()->prepare('INSERT INTO prix_historique (p_id, prix_ht) VALUES (:produit_id, :prix_ht)');
 
     $st->execute([
         'produit_id' => db()->lastInsertId(),
