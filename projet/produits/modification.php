@@ -35,6 +35,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'id' => $id
     ]);
 
+    $st = db()->prepare('INSERT INTO prix_historique (p_id, prix_ht) VALUES (:produit_id, :prix_ht)');
+    $st->execute([
+        'produit_id' => $id,
+        'prix_ht' => (float)$_POST['prix']
+    ]);
+
     rediriger('/produits/liste.php');
 }
 
@@ -56,6 +62,10 @@ require __DIR__ . '/../templates/header.php';
   </label>
   <label>Image URL
     <input type="url" name="image_url" value="<?= h($produit['url_image_p']) ?>">
+  </label>
+
+  <label>Prix
+    <input type="number" name="prix" required min="0" step="0.01" value="<?= h($produit['prix_ht'] ?? '') ?>">
   </label>
 
     <label>Catégorie

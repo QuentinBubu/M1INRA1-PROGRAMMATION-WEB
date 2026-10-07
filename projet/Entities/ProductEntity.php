@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+require_once 'PrixEntity.php';
+
 /**
  * Représente un produit.
  */
@@ -15,6 +17,8 @@ class ProductEntity
     private ?string $url_image_p = null;
     private ?int $promo_p = null;
     private int $categorie_id;
+
+    private ?PrixEntity $prixEntity = null;
 
     /**
      * Retourne l'identifiant du produit.
@@ -204,6 +208,22 @@ class ProductEntity
     public function setCategorieId(int $categorie_id): self
     {
         $this->categorie_id = $categorie_id;
+
+        return $this;
+    }
+
+    public function getDernierPrix(): PrixEntity
+    {
+        if ($this->prixEntity === null) {
+            throw new RuntimeException('Le prix n\'a pas été défini pour ce produit.');
+        }
+
+        return $this->prixEntity;
+    }
+
+    public function setDernierPrix(PrixEntity $prix): self
+    {
+        $this->prixEntity = $prix;
 
         return $this;
     }
