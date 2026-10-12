@@ -82,6 +82,40 @@ section > p {
   font-weight: 700;
 }
 
+.produit form {
+  display: grid;
+  gap: 0.5rem;
+  margin-top: auto;
+}
+
+.produit form label {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+.produit form input {
+  margin-top: 0.35rem;
+}
+
+.produit form button {
+  margin-top: 0;
+}
+
+.rupture {
+  color: #b91c1c !important;
+  font-weight: 700;
+}
+
+.lien-panier {
+  margin: 0 0 1.5rem;
+  text-align: right;
+}
+
+.lien-panier .bouton {
+  display: inline-block;
+}
+
 @media (max-width: 640px) {
   body {
     padding: 1rem;

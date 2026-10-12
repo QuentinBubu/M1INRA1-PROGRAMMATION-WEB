@@ -2,11 +2,14 @@
 
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../Entities/ProductEntity.php';
+require_once __DIR__ . '/../Entities/PrixEntity.php';
+require_once __DIR__ . '/../Entities/CategorieEntity.php';
 
 $tlProduits = db()->query('SELECT * FROM produit WHERE is_deleted = 0')->fetchAll(PDO::FETCH_ASSOC);
+$tlCategories = db()->query('SELECT * FROM categorie')->fetchAll(PDO::FETCH_CLASS | PDO::FETCH_UNIQUE, \CategorieEntity::class);
 
-$tlProduits = array_map(function ($produit) {
-    $entity = new ProductEntity();
+$tlProduits = array_map(function ($produit) use ($tlCategories) {
+    $entity = new \ProductEntity();
     $requetePrix = db()->prepare(
         'SELECT prix_ht
          FROM prix_historique
@@ -17,7 +20,7 @@ $tlProduits = array_map(function ($produit) {
     $requetePrix->execute(['p_id' => $produit['p_id']]);
     $prix = $requetePrix->fetch(PDO::FETCH_ASSOC);
 
-    $prixEntity = new PrixEntity();
+    $prixEntity = new \PrixEntity();
     if ($prix !== false) {
         $prixEntity->setPrixHt((float) $prix['prix_ht']);
     } else $prixEntity->setPrixHt(-1);
@@ -29,18 +32,36 @@ $tlProduits = array_map(function ($produit) {
             ->setStockP((int)$produit['stock_p'])
             ->setUrlImageP($produit['url_image_p'])
             ->setPromoP((int)$produit['promo_p'])
-            ->setCategorieId((int)$produit['categorie_id'])
+            ->setCategorie($tlCategories[(int)$produit['categorie_id']] ?? null)
             ->setDesignationP($produit['designation_p']);
     return $entity;
 }, $tlProduits);
 
 $titre = 'Catalogue';
 
-require_once __DIR__ . '/../templates/header.php';
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!csrf_valide()) {
+        $erreurs[] = 'La requête a expiré, veuillez réessayer.';
+    } else {
+        $message = panier_ajouter(
+            (int) ($_POST['p_id'] ?? 0),
+            max(1, (int) ($_POST['quantite'] ?? 1))
+        );
+        if ($message !== null) {
+            $erreurs[] = $message;
+        } else {
+            flash_set('Produit ajouté au panier.');
+            rediriger('/produits/catalogue.php');
+        }
+    }
+}
 
+require_once __DIR__ . '/../templates/header.php';
 ?>
 
 <link rel="stylesheet" href="../assets/styles/catalogue.css">
+
+<p class="lien-panier"><a class="bouton secondaire" href="../panier.php">Voir mon panier (<?= h((string) panier_quantite()) ?>)</a></p>
 
 <section>
     <?php if (count($tlProduits) === 0): ?>
@@ -52,9 +73,22 @@ require_once __DIR__ . '/../templates/header.php';
             <p>Date d'entrée: <?= h($produit->getDateIn()) ?></p>
             <img src="<?= h($produit->getUrlImageP() ?: 'https://picsum.photos/200/300') ?>" alt="<?= h($produit->getDesignationP()) ?>">
             <p>Promo: <?= h($produit->getPromoP()) ?></p>
-            <p>Catégorie ID: <?= h($produit->getCategorieId()) ?></p>
-            <p>Prix HT / TTC : <?= h($produit->getDernierPrix()->getPrixHt()) ?>
-                / <?= h($produit->getDernierPrix()->getPrixTtc()) ?></p>
+            <p>Catégorie: <?= h($produit->getCategorie()->getLibellec()) ?></p>
+            <p>Prix HT / TTC : <?= h($produit->calcDernierPrix(false)) ?>
+                / <?= h($produit->calcDernierPrix()) ?></p>
+            <?php if ($produit->getStockP() > 0): ?>
+                <form method="post">
+                    <?= csrf_champ() ?>
+                    <input type="hidden" name="p_id" value="<?= h((string) $produit->getPId()) ?>">
+                    <label>
+                        Quantité
+                        <input type="number" name="quantite" min="1" max="<?= h((string) $produit->getStockP()) ?>" value="1">
+                    </label>
+                    <button type="submit">Ajouter au panier</button>
+                </form>
+            <?php else: ?>
+                <p class="rupture">Rupture de stock</p>
+            <?php endif; ?>
         </article>
     <?php endforeach; endif; ?>
 </section>

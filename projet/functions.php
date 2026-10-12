@@ -5,7 +5,7 @@ declare(strict_types=1);
 /**
  * Protection XSS
  *
- * @param string|null $s
+ * @param ?string $s
  * @return string Chaîne encodée
  */
 function h(?string $s): string
@@ -45,6 +45,157 @@ function flash_get(): ?string
     $m = $_SESSION['flash'] ?? null;
     unset($_SESSION['flash']);
     return $m;
+}
+
+/* ========== Panier ========== */
+/**
+ * Retourne le contenu du panier stocke en session.
+ *
+ * @return array<int, int> Identifiants produit => quantites.
+ */
+function panier(): array
+{
+    if (!isset($_SESSION['panier']) || !is_array($_SESSION['panier'])) {
+        $_SESSION['panier'] = [];
+    }
+
+    return $_SESSION['panier'];
+}
+
+/**
+ * Retourne le nombre total d'articles dans le panier.
+ * 
+ * @return int Quantité totale d'articles.
+ */
+function panier_quantite(): int
+{
+    return array_sum(panier());
+}
+
+/**
+ * Ajoute une quantite d'un produit en controlant son stock.
+ *
+ * @return string|null Message d'erreur, ou null si l'ajout est effectue.
+ */
+function panier_ajouter(int $produitId, int $quantite = 1): ?string
+{
+    if ($quantite < 1) {
+        return 'La quantité doit être positive.';
+    }
+
+    $requete = db()->prepare(
+        'SELECT stock_p FROM produit WHERE p_id = :p_id AND is_deleted = 0 LIMIT 1'
+    );
+    $requete->execute(['p_id' => $produitId]);
+    $produit = $requete->fetch();
+
+    if ($produit === false) {
+        return 'Produit introuvable.';
+    }
+    if ((int) $produit['stock_p'] < 1) {
+        return 'Ce produit est en rupture de stock.';
+    }
+
+    $panier = panier();
+    $nouvelleQuantite = ($panier[$produitId] ?? 0) + $quantite;
+    if ($nouvelleQuantite > (int) $produit['stock_p']) {
+        return 'La quantité demandée dépasse le stock disponible (maximum : ' . h($produit['stock_p']) . ')';
+    }
+
+    $panier[$produitId] = $nouvelleQuantite;
+    $_SESSION['panier'] = $panier;
+    return null;
+}
+
+/**
+ * Met à jour toutes les quantités envoyées par le formulaire du panier.
+ *
+ * @param array<string, mixed> $quantites
+ * @return array<int, string> Erreurs par identifiant produit.
+ */
+function panier_mettre_a_jour(array $quantites): array
+{
+    $panier = panier();
+    $erreurs = [];
+
+    foreach ($panier as $produitId => $ancienneQuantite) {
+        $quantite = filter_var($quantites[(string) $produitId] ?? 0, FILTER_VALIDATE_INT);
+
+        if ($quantite === false || $quantite < 0) {
+            $erreurs[$produitId] = 'Quantité invalide.';
+            continue;
+        }
+
+        if ($quantite === 0) {
+            unset($panier[$produitId]);
+            continue;
+        }
+
+        $requete = db()->prepare(
+            'SELECT stock_p FROM produit WHERE p_id = :p_id AND is_deleted = 0 LIMIT 1'
+        );
+        $requete->execute(['p_id' => $produitId]);
+        $produit = $requete->fetch();
+
+        if ($produit === false) {
+            unset($panier[$produitId]);
+            $erreurs[$produitId] = 'Produit indisponible, il a été retiré du panier.';
+        } elseif ($quantite > (int) $produit['stock_p']) {
+            $panier[$produitId] = (int) $produit['stock_p'];
+            $erreurs[$produitId] = 'La quantité a été limitée au stock disponible (maximum : ' . h($produit['stock_p']) . ').';
+        } else {
+            $panier[$produitId] = $quantite;
+        }
+    }
+
+    $_SESSION['panier'] = $panier;
+    return $erreurs;
+}
+
+/**
+ * Charge les produits du panier avec leur prix courant.
+ *
+ * @return array<int, array<string, mixed>>
+ */
+function panier_lignes(): array
+{
+    $panier = panier();
+    if ($panier === []) {
+        return [];
+    }
+
+    $ids = array_keys($panier);
+    $parametres = implode(',', array_fill(0, count($ids), '?'));
+    $requete = db()->prepare(
+        'SELECT p.p_id, p.designation_p, p.stock_p, p.url_image_p,
+                COALESCE((SELECT ph.prix_ht
+                          FROM prix_historique ph
+                          WHERE ph.p_id = p.p_id
+                          ORDER BY ph.date_debut DESC, ph.prix_id DESC
+                          LIMIT 1), 0) AS prix_ht
+         FROM produit p
+         WHERE p.is_deleted = 0 AND p.p_id IN (' . $parametres . ')'
+    );
+    $requete->execute($ids);
+    $produits = [];
+
+    foreach ($requete->fetchAll() as $produit) {
+        $produitId = (int) $produit['p_id'];
+        $quantite = min((int) $panier[$produitId], (int) $produit['stock_p']);
+        if ($quantite < 1) {
+            unset($panier[$produitId]);
+            continue;
+        }
+
+        $prixTtc = (float) $produit['prix_ht'] * 1.2;
+        $produit['quantite'] = $quantite;
+        $produit['prix_ttc'] = $prixTtc;
+        $produit['sous_total'] = $prixTtc * $quantite;
+        $produits[$produitId] = $produit;
+    }
+
+    $_SESSION['panier'] = array_intersect_key($panier, $produits);
+    return array_values($produits);
 }
 
 /* ========== CSRF ========== */

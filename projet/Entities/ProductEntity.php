@@ -2,7 +2,10 @@
 
 declare(strict_types=1);
 
-require_once 'PrixEntity.php';
+use CategorieEntity;
+
+require_once __DIR__ . '/PrixEntity.php';
+require_once __DIR__ . '/CategorieEntity.php';
 
 /**
  * Représente un produit.
@@ -16,9 +19,9 @@ class ProductEntity
     private int $stock_p = 0;
     private ?string $url_image_p = null;
     private ?int $promo_p = null;
-    private int $categorie_id;
 
-    private ?PrixEntity $prixEntity = null;
+    private ?\CategorieEntity $categorieEntity = null;
+    private ?\PrixEntity $prixEntity = null;
 
     /**
      * Retourne l'identifiant du produit.
@@ -189,30 +192,30 @@ class ProductEntity
     }
 
     /**
-     * Retourne l'identifiant de la catégorie.
+     * Retourne la catégorie.
      *
-     * @return int Identifiant de la catégorie.
+     * @return CategorieEntity|null Catégorie.
      */
-    public function getCategorieId(): int
+    public function getCategorie(): ?CategorieEntity
     {
-        return $this->categorie_id;
+        return $this->categorieEntity;
     }
 
     /**
-     * Définit l'identifiant de la catégorie.
+     * Définit la catégorie.
      *
-     * @param int $categorie_id Identifiant de la catégorie.
+     * @param CategorieEntity|null $categorie Catégorie.
      *
      * @return self Entité courante.
      */
-    public function setCategorieId(int $categorie_id): self
+    public function setCategorie(?CategorieEntity $categorie): self
     {
-        $this->categorie_id = $categorie_id;
+        $this->categorieEntity = $categorie;
 
         return $this;
     }
 
-    public function getDernierPrix(): PrixEntity
+    public function getDernierPrix(): \PrixEntity
     {
         if ($this->prixEntity === null) {
             throw new RuntimeException('Le prix n\'a pas été défini pour ce produit.');
@@ -221,10 +224,15 @@ class ProductEntity
         return $this->prixEntity;
     }
 
-    public function setDernierPrix(PrixEntity $prix): self
+    public function setDernierPrix(\PrixEntity $prix): self
     {
         $this->prixEntity = $prix;
 
         return $this;
+    }
+
+    public function calcDernierPrix(bool $ttc = true): float
+    {
+        return  $ttc ? $this->prixEntity->getPrixTtc($this->categorieEntity->getTaxeC()) : $this->prixEntity->getPrixHt();
     }
 }

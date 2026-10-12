@@ -14,6 +14,7 @@ FLUSH PRIVILEGES;
 CREATE TABLE categorie (
   categorie_id  INT AUTO_INCREMENT,
   libelle_c     VARCHAR(100) NOT NULL,
+  taxe_c        DECIMAL NOT NULL DEFAULT 0.20,
   PRIMARY KEY (categorie_id),
   UNIQUE KEY uq_categorie_libelle (libelle_c)
 );
@@ -116,10 +117,10 @@ CREATE TABLE droit (
 -- -----------------------------------------------------
 INSERT INTO role (libelle_role) VALUES ('client'), ('admin');
  
-INSERT INTO categorie (categorie_id, libelle_c) VALUES
-  (1, 'Smartphone'),
-  (2, 'Ordinateur portable'),
-  (3, 'Casque audio'),
-  (4, 'Montre connectée'),
-  (5, 'Tablette'),
-  (6, 'Caméra');
+INSERT INTO categorie (categorie_id, libelle_c, taxe_c) VALUES
+  (1, 'Smartphone', 0.20),
+  (2, 'Ordinateur portable', 0.20),
+  (3, 'Casque audio', 0.20),
+  (4, 'Montre connectée', 0.20),
+  (5, 'Tablette', 0.20),
+  (6, 'Caméra', 0.20);

@@ -8,12 +8,13 @@ services:
     volumes:
       - ./projet:/var/www/html
     env_file: .env
+    extra_hosts:
+      - "host.docker.internal:host-gateway" # <- Ajouté pour Xdebug sur Windows/WSL2
     depends_on:
       db:
         condition: service_healthy
     networks:
       - webnet
-
 
   db:
     image: mysql:8.4
