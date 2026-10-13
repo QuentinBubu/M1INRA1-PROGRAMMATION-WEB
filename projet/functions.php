@@ -338,46 +338,36 @@ function valider_inscription(string $login, string $mail, string $mdp, string $m
     return $e;
 }
 
-/* ========== Création d'utilisateur ========== */
-/**
- * Retourne l'id créé, ou une chaîne d'erreur (string) si login/mail déjà pris.
- * user_compte_id : ici attribué automatiquement (MAX+1).
- */
 function creer_utilisateur(string $login, string $mail, string $mdp): int|string
 {
-    $pdo  = db();
-    $hash = password_hash($mdp, PASSWORD_DEFAULT);
+    $pdo = db();
+    $hash = password_hash($mdp, PASSWORD_ARGON2ID);
 
-    for ($essai = 0; $essai < 5; $essai++) {
-        try {
-            $pdo->beginTransaction();
+    try {
+        $pdo->beginTransaction();
 
-            $st = $pdo->prepare('SELECT 1 FROM `user` WHERE user_login = :l OR user_mail = :m LIMIT 1');
-            $st->execute(['l' => $login, 'm' => $mail]);
-            if ($st->fetchColumn()) {
-                $pdo->rollBack();
-                return 'Identifiant ou e-mail déjà utilisé.';
-            }
-
-            $compte = (int)$pdo->query('SELECT COALESCE(MAX(user_compte_id), 0) + 1 FROM `user` FOR UPDATE')->fetchColumn();
-
-            $ins = $pdo->prepare(
-                'INSERT INTO `user` (user_login, user_password, user_compte_id, user_mail)
-                 VALUES (:l, :p, :c, :m)'
-            );
-            $ins->execute(['l' => $login, 'p' => $hash, 'c' => $compte, 'm' => $mail]);
-            $id = (int)$pdo->lastInsertId();
-            $pdo->commit();
-            return $id;
-        } catch (PDOException $e) {
-            if ($pdo->inTransaction()) {
-                $pdo->rollBack();
-            }
-            if ($e->getCode() !== '23000') { // autre chose qu'un doublon => vraie erreur
-                throw $e;
-            }
-            // doublon (concurrence sur compte_id ou login/mail) : on retente
+        // Vérifier si le login ou le mail existe déjà
+        $st = $pdo->prepare('SELECT 1 FROM `user` WHERE user_login = :l OR user_mail = :m LIMIT 1');
+        $st->execute(['l' => $login, 'm' => $mail]);
+        if ($st->fetchColumn()) {
+            return 'Identifiant ou e-mail déjà utilisé.';
         }
+
+        // Insérer le nouvel utilisateur
+        $compte = (int)$pdo->query('SELECT COALESCE(MAX(user_compte_id), 0) + 1 FROM `user` FOR UPDATE')->fetchColumn();
+        $ins = $pdo->prepare(
+            'INSERT INTO `user` (user_login, user_password, user_compte_id, user_mail)
+            VALUES (:l, :p, :c, :m)'
+        );
+        $ins->execute(['l' => $login, 'p' => $hash, 'c' => $compte, 'm' => $mail]);
+
+        // Commit la transaction
+        $pdo->commit();
+        return (int)$pdo->lastInsertId();
+    } catch (PDOException $e) {
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
+        throw $e;
     }
-    return 'Inscription impossible pour le moment, réessayez.';
 }

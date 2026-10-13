@@ -4,6 +4,7 @@ require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../Entities/ProductEntity.php';
 
 $tlProduits = db()->query('SELECT * FROM produit')->fetchAll(PDO::FETCH_ASSOC);
+$tlCategories = db()->query('SELECT * FROM categorie')->fetchAll(PDO::FETCH_UNIQUE | PDO::FETCH_CLASS, CategorieEntity::class);
 
 $tlProduits = array_map(function ($produit) {
     $entity = new ProductEntity();
@@ -29,7 +30,7 @@ $tlProduits = array_map(function ($produit) {
             ->setStockP((int)$produit['stock_p'])
             ->setUrlImageP($produit['url_image_p'])
             ->setPromoP((int)$produit['promo_p'])
-            ->setCategorieId((int)$produit['categorie_id'])
+            ->setCategorie($tlCategories[$produit['categorie_id']] ?? null)
             ->setDesignationP($produit['designation_p']);
     return $entity;
 }, $tlProduits);
@@ -45,7 +46,7 @@ foreach ($tlProduits as $produit) {
         - Date d'entrée: {$produit->getDateIn()}
         - Image URL: {$produit->getUrlImageP()}
         - Promo: {$produit->getPromoP()}
-        - Catégorie ID: {$produit->getCategorieId()}
+        - Catégorie: {$produit->getCategorie()}
         - Prix HT : {$produit->getDernierPrix()->getPrixHt()}
         - <a href='modification.php?id={$produit->getPId()}'>(Modifier)</a> <br>";
 }

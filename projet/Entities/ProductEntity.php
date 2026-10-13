@@ -2,8 +2,6 @@
 
 declare(strict_types=1);
 
-use CategorieEntity;
-
 require_once __DIR__ . '/PrixEntity.php';
 require_once __DIR__ . '/CategorieEntity.php';
 
