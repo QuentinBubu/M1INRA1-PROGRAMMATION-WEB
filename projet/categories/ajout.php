@@ -20,7 +20,7 @@ require __DIR__ . '/../templates/header.php';
     <input type="text" name="libelle_c" required maxlength="100">
   </label>
   <label>Taxe
-    <input type="number" name="taxe_c" required min="0" max="100" step="0.01" value="20.00">
+    <input type="number" name="taxe_c" required min="0" max="100" value="20.00">
   </label>
   <button type="submit">Ajouter</button>
 </form>

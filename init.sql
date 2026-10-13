@@ -60,12 +60,14 @@ CREATE TABLE prix_historique (
 -- Comptes clients
 -- -----------------------------------------------------
 CREATE TABLE compte (
-  user_compte_id       INT AUTO_INCREMENT,
+  user_id       INT AUTO_INCREMENT,
   prenom_c             VARCHAR(100) NOT NULL,
   nom_c                VARCHAR(100) NOT NULL,
   adresse_livraison_c  TEXT NULL,
   telephone_c          VARCHAR(20) NULL,
-  PRIMARY KEY (user_compte_id)
+  PRIMARY KEY (user_id),
+  CONSTRAINT fk_user_id FOREIGN KEY (user_id)
+    REFERENCES `user` (user_id) ON DELETE CASCADE
 );
  
 -- -----------------------------------------------------
@@ -81,7 +83,6 @@ CREATE TABLE role (
 -- -----------------------------------------------------
 -- Utilisateurs (authentification)
 -- user_password : stocker le résultat de password_hash()
--- user_compte_id UNIQUE : relation 1-1 avec compte
 -- -----------------------------------------------------
 CREATE TABLE `user` (
   user_id          INT AUTO_INCREMENT,
@@ -90,13 +91,9 @@ CREATE TABLE `user` (
   user_mail        VARCHAR(255) NOT NULL,
   user_date_new    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   user_date_login  DATETIME NULL,
-  user_compte_id   INT NOT NULL,
   PRIMARY KEY (user_id),
   UNIQUE KEY uq_user_login (user_login),
   UNIQUE KEY uq_user_mail (user_mail),
-  UNIQUE KEY uq_user_compte (user_compte_id),
-  CONSTRAINT fk_user_compte FOREIGN KEY (user_compte_id)
-    REFERENCES compte (user_compte_id) ON DELETE CASCADE
 );
  
 -- -----------------------------------------------------

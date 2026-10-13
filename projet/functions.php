@@ -172,8 +172,10 @@ function panier_lignes(): array
                           FROM prix_historique ph
                           WHERE ph.p_id = p.p_id
                           ORDER BY ph.date_debut DESC, ph.prix_id DESC
-                          LIMIT 1), 0) AS prix_ht
+                          LIMIT 1), 0) AS prix_ht,
+                c.taxe_c
          FROM produit p
+         INNER JOIN categorie c USING (categorie_id)
          WHERE p.is_deleted = 0 AND p.p_id IN (' . $parametres . ')'
     );
     $requete->execute($ids);
@@ -187,7 +189,7 @@ function panier_lignes(): array
             continue;
         }
 
-        $prixTtc = (float) $produit['prix_ht'] * 1.2;
+        $prixTtc = (float) $produit['prix_ht'] * (1 + (float) $produit['taxe_c']);
         $produit['quantite'] = $quantite;
         $produit['prix_ttc'] = $prixTtc;
         $produit['sous_total'] = $prixTtc * $quantite;
@@ -354,16 +356,18 @@ function creer_utilisateur(string $login, string $mail, string $mdp): int|string
         }
 
         // Insérer le nouvel utilisateur
-        $compte = (int)$pdo->query('SELECT COALESCE(MAX(user_compte_id), 0) + 1 FROM `user` FOR UPDATE')->fetchColumn();
         $ins = $pdo->prepare(
-            'INSERT INTO `user` (user_login, user_password, user_compte_id, user_mail)
-            VALUES (:l, :p, :c, :m)'
+            'INSERT INTO `user` (user_login, user_password, user_mail)
+            VALUES (:l, :p, :m)'
         );
-        $ins->execute(['l' => $login, 'p' => $hash, 'c' => $compte, 'm' => $mail]);
+        $ins->execute(['l' => $login, 'p' => $hash, 'm' => $mail]);
+
+        // /!\ TO DO : créer un compte associé si nécessaire, et récupérer son ID
 
         // Commit la transaction
         $pdo->commit();
-        return (int)$pdo->lastInsertId();
+        $id = (int) $pdo->lastInsertId();
+        return $id;
     } catch (PDOException $e) {
         if ($pdo->inTransaction()) {
             $pdo->rollBack();

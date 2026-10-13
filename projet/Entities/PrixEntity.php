@@ -91,6 +91,6 @@ class PrixEntity
      */
     public function getPrixTtc(float $tvaRate = 1.2): float
     {
-        return $this->prix_ht * $tvaRate;
+        return $this->prix_ht * (1 + $tvaRate);
     }
 }
