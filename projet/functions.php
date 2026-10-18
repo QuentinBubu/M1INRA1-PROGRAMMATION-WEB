@@ -14,6 +14,24 @@ function h(?string $s): string
 }
 
 /**
+ * Formate un montant en euros.
+ */
+function format_prix(float $montant): string
+{
+    return number_format($montant, 2, ',', ' ') . ' €';
+}
+
+/**
+ * Formate une date SQL (Y-m-d) en affichage français.
+ */
+function format_date_fr(string $date): string
+{
+    $parsed = DateTimeImmutable::createFromFormat('Y-m-d', $date);
+
+    return $parsed instanceof DateTimeImmutable ? $parsed->format('d/m/Y') : $date;
+}
+
+/**
  * Redirection de l'utilisateur
  *
  * @param string $url
@@ -167,7 +185,7 @@ function panier_lignes(): array
     $ids = array_keys($panier);
     $parametres = implode(',', array_fill(0, count($ids), '?'));
     $requete = db()->prepare(
-        'SELECT p.p_id, p.designation_p, p.stock_p, p.url_image_p,
+        'SELECT p.p_id, p.designation_p, p.stock_p, p.url_image_p, p.promo_p,
                 COALESCE((SELECT ph.prix_ht
                           FROM prix_historique ph
                           WHERE ph.p_id = p.p_id
@@ -189,7 +207,12 @@ function panier_lignes(): array
             continue;
         }
 
-        $prixTtc = (float) $produit['prix_ht'] * (1 + (float) $produit['taxe_c']);
+        $prixHt = (float) $produit['prix_ht'];
+        $promo = $produit['promo_p'] !== null ? (int) $produit['promo_p'] : 0;
+        if ($promo > 0) {
+            $prixHt *= 1 - ($promo / 100);
+        }
+        $prixTtc = round($prixHt * (1 + (float) $produit['taxe_c']), 2);
         $produit['quantite'] = $quantite;
         $produit['prix_ttc'] = $prixTtc;
         $produit['sous_total'] = $prixTtc * $quantite;

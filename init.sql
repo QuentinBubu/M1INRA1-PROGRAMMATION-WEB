@@ -14,7 +14,7 @@ FLUSH PRIVILEGES;
 CREATE TABLE categorie (
   categorie_id  INT AUTO_INCREMENT,
   libelle_c     VARCHAR(100) NOT NULL,
-  taxe_c        DECIMAL NOT NULL DEFAULT 0.20,
+  taxe_c        DECIMAL(4,2) NOT NULL DEFAULT 0.20,
   PRIMARY KEY (categorie_id),
   UNIQUE KEY uq_categorie_libelle (libelle_c)
 );
@@ -57,20 +57,6 @@ CREATE TABLE prix_historique (
 );
  
 -- -----------------------------------------------------
--- Comptes clients
--- -----------------------------------------------------
-CREATE TABLE compte (
-  user_id       INT AUTO_INCREMENT,
-  prenom_c             VARCHAR(100) NOT NULL,
-  nom_c                VARCHAR(100) NOT NULL,
-  adresse_livraison_c  TEXT NULL,
-  telephone_c          VARCHAR(20) NULL,
-  PRIMARY KEY (user_id),
-  CONSTRAINT fk_user_id FOREIGN KEY (user_id)
-    REFERENCES `user` (user_id) ON DELETE CASCADE
-);
- 
--- -----------------------------------------------------
 -- Rôles
 -- -----------------------------------------------------
 CREATE TABLE role (
@@ -93,8 +79,23 @@ CREATE TABLE `user` (
   user_date_login  DATETIME NULL,
   PRIMARY KEY (user_id),
   UNIQUE KEY uq_user_login (user_login),
-  UNIQUE KEY uq_user_mail (user_mail),
+  UNIQUE KEY uq_user_mail (user_mail)
 );
+
+-- -----------------------------------------------------
+-- Comptes clients
+-- -----------------------------------------------------
+CREATE TABLE compte (
+  user_id       INT AUTO_INCREMENT,
+  prenom_c             VARCHAR(100) NOT NULL,
+  nom_c                VARCHAR(100) NOT NULL,
+  adresse_livraison_c  TEXT NULL,
+  telephone_c          VARCHAR(20) NULL,
+  PRIMARY KEY (user_id),
+  CONSTRAINT fk_user_id FOREIGN KEY (user_id)
+    REFERENCES `user` (user_id) ON DELETE CASCADE
+);
+ 
  
 -- -----------------------------------------------------
 -- Droits : lien utilisateur <-> rôle

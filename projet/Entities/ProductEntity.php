@@ -213,6 +213,11 @@ class ProductEntity
         return $this;
     }
 
+    public function hasPrix(): bool
+    {
+        return $this->prixEntity !== null;
+    }
+
     public function getDernierPrix(): \PrixEntity
     {
         if ($this->prixEntity === null) {
@@ -229,8 +234,23 @@ class ProductEntity
         return $this;
     }
 
+    /**
+     * Calcule le prix courant (promo appliquée sur le HT, puis TVA si demandée).
+     */
     public function calcDernierPrix(bool $ttc = true): float
     {
-        return  $ttc ? $this->prixEntity->getPrixTtc($this->categorieEntity->getTaxeC()) : $this->prixEntity->getPrixHt();
+        $prixHt = $this->getDernierPrix()->getPrixHt();
+        $promo = $this->promo_p;
+        if ($promo !== null && $promo > 0) {
+            $prixHt *= 1 - ($promo / 100);
+        }
+
+        if (!$ttc) {
+            return round($prixHt, 2);
+        }
+
+        $taxe = $this->categorieEntity?->getTaxeC() ?? 0.0;
+
+        return round($prixHt * (1 + $taxe), 2);
     }
 }

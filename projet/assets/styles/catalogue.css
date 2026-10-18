@@ -75,10 +75,15 @@ section > p {
   color: #334155;
 }
 
-.produit p:last-child {
+.produit .prix {
   margin-top: auto;
   color: #2563eb;
   font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.produit .promo {
+  color: #b91c1c;
   font-weight: 700;
 }
 
@@ -108,7 +113,7 @@ section > p {
 }
 
 .lien-panier {
-  margin: 0 0 1.5rem;
+  margin: 1rem 0 1.5rem;
   text-align: right;
 }
 
