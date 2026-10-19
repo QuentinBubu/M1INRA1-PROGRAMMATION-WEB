@@ -34,7 +34,9 @@
                 Se connecter
             </button>
         </form>
-
+        <p>
+            <a href="/register">Créer un compte</a>
+        </p>
         <div id="toastMessage" class="toast" role="alert" aria-live="assertive"></div>
     </section>
 </main>
