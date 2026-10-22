@@ -304,7 +304,6 @@ function ouvrir_session(array $u): void
     session_regenerate_id(true);   // anti fixation de session
     $_SESSION['user_id']       = (int)$u['user_id'];
     $_SESSION['user_login']    = $u['user_login'];
-    $_SESSION['user_compte_id'] = (int)$u['user_compte_id'];
     $_SESSION['last_activity'] = time();
     $_SESSION['csrf']          = bin2hex(random_bytes(32));
 }
@@ -397,4 +396,116 @@ function creer_utilisateur(string $login, string $mail, string $mdp): int|string
         }
         throw $e;
     }
+}
+
+/* ========== Administration ========== */
+/**
+ * Retourne les libellés des rôles d'un utilisateur.
+ *
+ * @param int $userId Identifiant de l'utilisateur.
+ *
+ * @return array<int, string> Libellés des rôles.
+ */
+function roles_utilisateur(int $userId): array
+{
+    $st = db()->prepare(
+        'SELECT r.libelle_role
+         FROM droit d
+         INNER JOIN role r ON r.id_role = d.id_role
+         WHERE d.user_id = :id'
+    );
+    $st->execute(['id' => $userId]);
+
+    return array_column($st->fetchAll(), 'libelle_role');
+}
+
+/**
+ * Indique si l'utilisateur connecté possède le rôle « admin ».
+ *
+ * @return bool true si l'utilisateur est administrateur.
+ */
+function est_admin(): bool
+{
+    if (!est_connecte()) {
+        return false;
+    }
+    if (!isset($_SESSION['roles']) || !is_array($_SESSION['roles'])) {
+        $_SESSION['roles'] = roles_utilisateur((int) $_SESSION['user_id']);
+    }
+
+    return in_array('admin', $_SESSION['roles'], true);
+}
+
+/**
+ * Exige un administrateur, sinon redirige vers la connexion.
+ *
+ * @return void
+ */
+function exiger_admin(): void
+{
+    if (!est_admin()) {
+        flash_set('Accès réservé aux administrateurs.');
+        rediriger('/connexion.php');
+    }
+}
+
+/* ========== Upload d'images ========== */
+/**
+ * Enregistre une image envoyée et retourne son chemin relatif.
+ *
+ * @param string $champ Nom du champ de formulaire FILES.
+ *
+ * @return string|null Chemin relatif (ex. « uploads/abc.jpg »), ou null si aucun fichier.
+ *
+ * @throws RuntimeException Si l'upload est invalide.
+ */
+function upload_image(string $champ): ?string
+{
+    if (!isset($_FILES[$champ]) || $_FILES[$champ]['error'] === UPLOAD_ERR_NO_FILE) {
+        return null;
+    }
+    $fichier = $_FILES[$champ];
+    if (!is_array($fichier) || (int) $fichier['error'] !== UPLOAD_ERR_OK) {
+        throw new RuntimeException('Erreur lors de l\'envoi de l\'image.');
+    }
+    if ((int) $fichier['size'] > 2 * 1024 * 1024) {
+        throw new RuntimeException('Image trop volumineuse (2 Mo maximum).');
+    }
+
+    // Validation réelle du contenu (pas seulement de l'extension)
+    $info = @getimagesize((string) $fichier['tmp_name']);
+    if ($info === false) {
+        throw new RuntimeException('Le fichier n\'est pas une image valide.');
+    }
+    $extension = match ($info[2]) {
+        IMAGETYPE_JPEG => 'jpg',
+        IMAGETYPE_PNG  => 'png',
+        IMAGETYPE_WEBP => 'webp',
+        IMAGETYPE_GIF  => 'gif',
+        default        => null,
+    };
+    if ($extension === null) {
+        throw new RuntimeException('Format non autorisé (jpg, png, webp, gif).');
+    }
+
+    $dossier = __DIR__ . '/uploads';
+    if (!is_dir($dossier)) {
+        mkdir($dossier, 0775, true);
+    }
+    $chemin = 'uploads/' . bin2hex(random_bytes(8)) . '.' . $extension;
+    if (!move_uploaded_file((string) $fichier['tmp_name'], __DIR__ . '/' . $chemin)) {
+        throw new RuntimeException('Impossible d\'enregistrer l\'image.');
+    }
+
+    return $chemin;
+}
+
+/**
+ * Retourne le chemin de l'image générique.
+ *
+ * @return string Chemin relatif de l'image par défaut.
+ */
+function image_defaut(): string
+{
+    return 'assets/img/defaut.svg';
 }

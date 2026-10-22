@@ -18,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         // Le login n'accepte pas "@" : pas d'ambiguité entre login et e-mail
         $st = db()->prepare(
-            'SELECT user_id, user_login, user_password, user_compte_id
+            'SELECT user_id, user_login, user_password
              FROM `user` WHERE user_login = :a OR user_mail = :b LIMIT 1'
         );
         $st->execute(['a' => $identifiant, 'b' => strtolower($identifiant)]);
