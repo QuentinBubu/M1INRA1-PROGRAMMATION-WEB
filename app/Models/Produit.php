@@ -3,11 +3,15 @@
 namespace App\Models;
 
 use ApiPlatform\Metadata\ApiResource;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 #[ApiResource]
 class Produit extends Model
 {
+
+    use HasFactory;
+
     protected $table = 'produit';
     protected $primaryKey = 'id_p';
     public $timestamps = false;
