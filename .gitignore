@@ -6,3 +6,7 @@ LoopingImage.jpg
 
 # Dépendances Composer
 /vendor/
+
+# Cache PHPUnit
+/.phpunit.cache/
+/.phpunit.result.cache

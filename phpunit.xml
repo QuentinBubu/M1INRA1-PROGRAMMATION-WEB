@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit bootstrap="tests/bootstrap.php"
+         colors="true"
+         cacheDirectory=".phpunit.cache">
+    <testsuites>
+        <testsuite name="E2E">
+            <directory>tests/E2E</directory>
+        </testsuite>
+    </testsuites>
+
+    <php>
+        <!-- Le navigateur tourne dans le conteneur Selenium et joint le service web par son nom. -->
+        <env name="APP_URL" value="http://web"/>
+        <env name="SELENIUM_URL" value="http://localhost:4444"/>
+    </php>
+</phpunit>

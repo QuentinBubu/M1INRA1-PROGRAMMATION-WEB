@@ -11,7 +11,7 @@ Le projet couvre le fil rouge du cours : authentification, CRUD utilisateurs/pro
 ### Prérequis
 
 - Docker Desktop (ou Docker Engine + Compose)
-- PHP 8.3+ et Composer pour générer les données de démonstration avec Faker
+- PHP 8.3+ et Composer pour les scripts et tests (extensions `curl`, `json`, `zip`)
 
 ### Installation
 
@@ -47,6 +47,31 @@ php scripts/seed_produits.php 50
 
 Le script est prévu pour être lancé depuis l'hôte. Il lit les identifiants MySQL dans `.env`, se connecte à `127.0.0.1:3306` par défaut et ajoute les produits sans supprimer les produits existants.
 
+### Tests E2E avec Selenium
+
+Les tests se trouvent dans `tests/E2E`. Selenium lance un vrai navigateur Chrome dans un conteneur Docker, tandis que PHPUnit et php-webdriver pilotent le navigateur depuis l'hôte.
+
+```bash
+# 1. Démarrer l'application, la base et Selenium
+docker compose up -d
+
+# 2. Installer les dépendances PHP
+composer install
+
+# 3. Lancer les tests E2E
+composer test:e2e
+```
+
+Le navigateur tourne dans le conteneur `selenium` et accède à l'application via `http://web`. Variables utilisées :
+
+- `APP_URL` : URL vue par le navigateur, `http://web` par défaut ;
+- `SELENIUM_URL` : `http://localhost:4444` par défaut ;
+- `TEST_ADMIN_LOGIN` / `TEST_ADMIN_PASSWORD` : à définir si le mot de passe admin a été changé.
+
+Les tests couvrent la connexion admin, le refus du backoffice sans connexion, le filtre du catalogue, l'ajout d'un produit et le recalcul dynamique du total du panier. Les produits de test sont créés puis supprimés automatiquement.
+
+> php-webdriver requiert les extensions PHP `curl`, `json` et `zip`. Si Composer signale `ext-zip` manquant, activez `extension=zip` dans le `php.ini` utilisé par la CLI.
+
 ### Base déjà existante
 
 Si le volume MySQL existe déjà, exécuter la migration :
@@ -74,14 +99,18 @@ Les nouveaux comptes créés via l'inscription reçoivent automatiquement une li
 
 ```text
 .
-├── docker-compose.yml        # Services web (PHP/Apache) + db (MySQL)
+├── docker-compose.yml        # Services web (PHP/Apache) + db (MySQL) + selenium
 ├── Dockerfile                # Image PHP 8.3 + Xdebug + pdo_mysql
 ├── init.sql                  # Schéma + données initiales + admin
 ├── migration_v2.sql          # Migration pour une base existante
-├── composer.json             # Dépendances de développement (Faker)
+├── composer.json             # Dépendances de développement (Faker, PHPUnit, Selenium)
 ├── composer.lock             # Versions verrouillées des dépendances
+├── phpunit.xml               # Configuration PHPUnit
 ├── scripts/
 │   └── seed_produits.php     # Génération de produits avec Faker
+├── tests/                    # Tests E2E Selenium
+│   ├── E2E/                  # Scénarios de navigation
+│   └── Support/              # Base Selenium + fixtures BDD
 ├── projet/                   # Racine web (montée dans /var/www/html)
 │   ├── config.php            # Config, sécurité, session, PDO
 │   ├── functions.php         # Auth, panier, CSRF, upload, validation
@@ -128,6 +157,10 @@ Les nouveaux comptes créés via l'inscription reçoivent automatiquement une li
 - Calcul de la TVA et du total TTC en session.
 - Mise à jour dynamique des sous-totaux et du total TTC lors du changement de quantité.
 
+### Tests
+- Tests E2E Selenium + PHPUnit : connexion admin, contrôle d'accès, filtre catalogue, ajout produit, panier dynamique.
+- Fixtures produits créées et nettoyées automatiquement.
+
 ---
 
 ## 5. Sécurité
@@ -148,7 +181,6 @@ Les nouveaux comptes créés via l'inscription reçoivent automatiquement une li
 - Frais de port.
 - Tunnel de commande (`commande` / `ligne_commande`).
 - API REST native + JSON Schema.
-- Tests Selenium / PHPUnit.
 - Crawler.
 - TD Laravel et TD API Platform.
 - TP noté : jeu JavaScript + comptes et scores en PHP.
@@ -176,6 +208,12 @@ docker compose exec web php -l /var/www/html/produits/liste.php
 
 # Générer des produits de démonstration
 php scripts/seed_produits.php 20
+
+# Démarrer Selenium
+docker compose up -d selenium
+
+# Lancer les tests E2E
+composer test:e2e
 
 # Accéder à MySQL
 docker compose exec db mysql -uweb_user -p e_commerce
