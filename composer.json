@@ -1,0 +1,15 @@
+{
+  "name": "m1inra1/e-commerce",
+  "description": "Boutique e-commerce PHP - dépendances de développement",
+  "type": "project",
+  "license": "MIT",
+  "require": {
+    "php": ">=8.3"
+  },
+  "require-dev": {
+    "fakerphp/faker": "^1.24"
+  },
+  "config": {
+    "sort-packages": true
+  }
+}

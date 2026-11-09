@@ -3,3 +3,6 @@ LoopingImage.jpg
 
 # Secrets et configuration locale
 .env
+
+# Dépendances Composer
+/vendor/

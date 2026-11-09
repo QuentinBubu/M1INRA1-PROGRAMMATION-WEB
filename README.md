@@ -11,6 +11,7 @@ Le projet couvre le fil rouge du cours : authentification, CRUD utilisateurs/pro
 ### Prérequis
 
 - Docker Desktop (ou Docker Engine + Compose)
+- PHP 8.3+ et Composer pour générer les données de démonstration avec Faker
 
 ### Installation
 
@@ -28,6 +29,23 @@ docker compose up -d --build
 L'application est disponible sur : **http://localhost:8080**
 
 La base de données est initialisée automatiquement par `init.sql` au premier démarrage.
+
+### Jeu de données de démonstration (Faker)
+
+Le script `scripts/seed_produits.php` génère des produits avec Faker : désignations, catégories, prix HT, stocks, promotions et dates d'entrée.
+
+```bash
+# Installer Faker
+composer install
+
+# Générer 20 produits (valeur par défaut)
+php scripts/seed_produits.php
+
+# Générer 50 produits
+php scripts/seed_produits.php 50
+```
+
+Le script est prévu pour être lancé depuis l'hôte. Il lit les identifiants MySQL dans `.env`, se connecte à `127.0.0.1:3306` par défaut et ajoute les produits sans supprimer les produits existants.
 
 ### Base déjà existante
 
@@ -60,6 +78,10 @@ Les nouveaux comptes créés via l'inscription reçoivent automatiquement une li
 ├── Dockerfile                # Image PHP 8.3 + Xdebug + pdo_mysql
 ├── init.sql                  # Schéma + données initiales + admin
 ├── migration_v2.sql          # Migration pour une base existante
+├── composer.json             # Dépendances de développement (Faker)
+├── composer.lock             # Versions verrouillées des dépendances
+├── scripts/
+│   └── seed_produits.php     # Génération de produits avec Faker
 ├── projet/                   # Racine web (montée dans /var/www/html)
 │   ├── config.php            # Config, sécurité, session, PDO
 │   ├── functions.php         # Auth, panier, CSRF, upload, validation
@@ -90,6 +112,7 @@ Les nouveaux comptes créés via l'inscription reçoivent automatiquement une li
 - Prix HT / TTC avec TVA par catégorie.
 - Promotion en pourcentage saisissable dans le backoffice.
 - Image par défaut si aucune image n'est renseignée.
+- Jeu de données de démonstration généré avec Faker (produits, prix, stocks, promotions, dates).
 
 ### Backoffice (admin)
 - Liste des produits, ajout, modification, suppression logique.
@@ -122,10 +145,9 @@ Les nouveaux comptes créés via l'inscription reçoivent automatiquement une li
 
 ## 6. Reste à faire (roadmap)
 
-- Frais de port et mise à jour dynamique du montant.
+- Frais de port.
 - Tunnel de commande (`commande` / `ligne_commande`).
 - API REST native + JSON Schema.
-- Faker / jeu de données de démonstration.
 - Tests Selenium / PHPUnit.
 - Crawler.
 - TD Laravel et TD API Platform.
@@ -151,6 +173,9 @@ docker compose exec web bash
 
 # Vérifier la syntaxe d'un fichier PHP
 docker compose exec web php -l /var/www/html/produits/liste.php
+
+# Générer des produits de démonstration
+php scripts/seed_produits.php 20
 
 # Accéder à MySQL
 docker compose exec db mysql -uweb_user -p e_commerce
