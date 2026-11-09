@@ -14,6 +14,7 @@ $donnees = [
     'date_in'      => date('Y-m-d'),
     'prix'         => '',
     'categorie_id' => $categories[0]['categorie_id'] ?? 0,
+    'promo'        => null,
     'image_url'    => '',
 ];
 
@@ -34,14 +35,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $pdo->beginTransaction();
 
                 $st = $pdo->prepare(
-                    'INSERT INTO produit (designation_p, stock_p, date_in, url_image_p, categorie_id)
-                     VALUES (:designation, :stock, :date_in, :image_url, :categorie_id)'
+                    'INSERT INTO produit (designation_p, stock_p, date_in, url_image_p, promo_p, categorie_id)
+                     VALUES (:designation, :stock, :date_in, :image_url, :promo, :categorie_id)'
                 );
                 $st->execute([
                     'designation'  => $donnees['designation'],
                     'stock'        => $donnees['stock'],
                     'date_in'      => $donnees['date_in'],
                     'image_url'    => $donnees['image_url'] !== '' ? $donnees['image_url'] : null,
+                    'promo'        => $donnees['promo'],
                     'categorie_id' => $donnees['categorie_id'],
                 ]);
                 $produitId = (int) $pdo->lastInsertId();
@@ -87,6 +89,12 @@ require __DIR__ . '/../templates/header.php';
   <label>Prix HT (€)
     <input type="number" name="prix" required min="0" step="0.01"
            value="<?= h((string) $donnees['prix']) ?>">
+  </label>
+
+  <label>Promotion (%) — laisser vide si aucune
+    <input type="number" name="promo" min="1" max="100" step="1"
+           placeholder="Ex. 10"
+           value="<?= h($donnees['promo'] !== null ? (string) $donnees['promo'] : '') ?>">
   </label>
 
   <label>Catégorie

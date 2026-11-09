@@ -39,6 +39,7 @@ $donnees = [
     'date_in'      => $produit['date_in'],
     'prix'         => $prixActuel ?? '',
     'categorie_id' => (int) $produit['categorie_id'],
+    'promo'        => $produit['promo_p'] !== null ? (int) $produit['promo_p'] : null,
     'image_url'    => (string) ($produit['url_image_p'] ?? ''),
 ];
 
@@ -64,6 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                          stock_p = :stock,
                          date_in = :date_in,
                          url_image_p = :image_url,
+                         promo_p = :promo,
                          categorie_id = :categorie_id
                      WHERE p_id = :id AND is_deleted = 0'
                 );
@@ -72,6 +74,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'stock'        => $donnees['stock'],
                     'date_in'      => $donnees['date_in'],
                     'image_url'    => $donnees['image_url'] !== '' ? $donnees['image_url'] : null,
+                    'promo'        => $donnees['promo'],
                     'categorie_id' => $donnees['categorie_id'],
                     'id'           => $id,
                 ]);
@@ -120,6 +123,12 @@ require __DIR__ . '/../templates/header.php';
   <label>Prix HT (€)
     <input type="number" name="prix" required min="0" step="0.01"
            value="<?= h((string) $donnees['prix']) ?>">
+  </label>
+
+  <label>Promotion (%) — laisser vide si aucune
+    <input type="number" name="promo" min="1" max="100" step="1"
+           placeholder="Ex. 10"
+           value="<?= h($donnees['promo'] !== null ? (string) $donnees['promo'] : '') ?>">
   </label>
 
   <label>Catégorie

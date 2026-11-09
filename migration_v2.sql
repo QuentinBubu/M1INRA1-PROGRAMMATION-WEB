@@ -34,3 +34,7 @@ SELECT u.user_id, u.user_login, u.user_login
 FROM `user` u
 WHERE u.user_login <> 'admin'
   AND NOT EXISTS (SELECT 1 FROM compte c WHERE c.user_id = u.user_id);
+
+-- 4. Taux de TVA : precision a 4 decimales (0.0550 = 5,5 %)
+ALTER TABLE categorie
+  MODIFY taxe_c DECIMAL(5,4) NOT NULL DEFAULT 0.2000;

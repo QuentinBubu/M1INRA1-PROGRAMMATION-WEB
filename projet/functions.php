@@ -454,6 +454,8 @@ function valider_produit(array $post): array
     $dateIn = trim((string) ($post['date_in'] ?? ''));
     $prix = filter_var($post['prix'] ?? null, FILTER_VALIDATE_FLOAT, ['options' => ['min_range' => 0]]);
     $categorieId = filter_var($post['categorie_id'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+    $promoBrute = trim((string) ($post['promo'] ?? ''));
+    $promo = null;
 
     if ($designation === '' || mb_strlen($designation) > 255) {
         $erreurs[] = 'La désignation est obligatoire (255 caractères maximum).';
@@ -480,12 +482,24 @@ function valider_produit(array $post): array
             $erreurs[] = 'La catégorie sélectionnée n\'existe pas.';
         }
     }
+    if ($promoBrute !== '') {
+        $promo = filter_var(
+            $promoBrute,
+            FILTER_VALIDATE_INT,
+            ['options' => ['min_range' => 1, 'max_range' => 100]]
+        );
+        if ($promo === false) {
+            $erreurs[] = 'La promotion doit être un pourcentage entier entre 1 et 100.';
+            $promo = null;
+        }
+    }
     return [[
         'designation'  => $designation,
         'stock'        => $stock === false ? 0 : (int) $stock,
         'date_in'      => $dateIn,
         'prix'         => $prix === false ? 0.0 : (float) $prix,
         'categorie_id' => $categorieId === false ? 0 : (int) $categorieId,
+        'promo'        => $promo,
     ], $erreurs];
 }
 

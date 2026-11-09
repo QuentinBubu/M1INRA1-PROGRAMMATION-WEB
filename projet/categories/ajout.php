@@ -40,7 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ]);
 
                 flash_set('Catégorie ajoutée avec succès.');
-                rediriger('/produits/liste.php');
+                rediriger('/categories/ajout.php');
             } catch (PDOException $e) {
                 if ($e->getCode() === '23000') {
                     $erreurs[] = 'Une catégorie porte déjà ce libellé.';
@@ -52,6 +52,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 }
+
+// Liste des catégories existantes et de leur taux de TVA.
+$categories = db()->query(
+    'SELECT categorie_id, libelle_c, taxe_c
+     FROM categorie
+     ORDER BY libelle_c'
+)->fetchAll();
 
 $titre = 'Ajout de catégorie';
 require __DIR__ . '/../templates/header.php';
@@ -72,6 +79,40 @@ require __DIR__ . '/../templates/header.php';
 
   <button type="submit">Ajouter</button>
 </form>
+
+<h2>TVA déjà en place</h2>
+
+<?php if ($categories === []): ?>
+  <p>Aucune catégorie enregistrée.</p>
+<?php else: ?>
+  <div class="table-wrapper">
+    <table class="table-admin">
+      <thead>
+        <tr>
+          <th scope="col">Catégorie</th>
+          <th scope="col">TVA</th>
+          <th scope="col">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <?php foreach ($categories as $categorie): ?>
+          <tr>
+            <td><?= h($categorie['libelle_c']) ?></td>
+            <td><?= h(number_format((float) $categorie['taxe_c'] * 100, 2, ',', ' ')) ?> %</td>
+            <td class="actions">
+              <a href="modification.php?id=<?= h((string) $categorie['categorie_id']) ?>">Modifier</a>
+              <form method="post" action="suppression.php" data-confirm="Supprimer cette catégorie et sa TVA ?">
+                <?= csrf_champ() ?>
+                <input type="hidden" name="id" value="<?= h((string) $categorie['categorie_id']) ?>">
+                <button type="submit">Supprimer</button>
+              </form>
+            </td>
+          </tr>
+        <?php endforeach; ?>
+      </tbody>
+    </table>
+  </div>
+<?php endif; ?>
 
 <p><a href="../produits/liste.php">Retour à la gestion des produits</a></p>
 

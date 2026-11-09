@@ -14,7 +14,7 @@ FLUSH PRIVILEGES;
 CREATE TABLE categorie (
   categorie_id  INT AUTO_INCREMENT,
   libelle_c     VARCHAR(100) NOT NULL,
-  taxe_c        DECIMAL(4,2) NOT NULL DEFAULT 0.20,
+  taxe_c        DECIMAL(5,4) NOT NULL DEFAULT 0.2000,
   PRIMARY KEY (categorie_id),
   UNIQUE KEY uq_categorie_libelle (libelle_c)
 );

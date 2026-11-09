@@ -66,7 +66,7 @@ Les nouveaux comptes créés via l'inscription reçoivent automatiquement une li
 │   ├── Entities/             # ProductEntity, PrixEntity, CategorieEntity
 │   ├── templates/            # header.php / footer.php
 │   ├── produits/             # Catalogue + backoffice CRUD
-│   ├── categories/           # Ajout de catégorie
+│   ├── categories/           # Ajout, modification de TVA, suppression
 │   └── assets/               # CSS, JS, image par défaut
 └── .env.example              # Modèle de configuration
 ```
@@ -91,7 +91,7 @@ Les nouveaux comptes créés via l'inscription reçoivent automatiquement une li
 
 ### Backoffice (admin)
 - Liste des produits, ajout, modification, suppression logique.
-- Gestion des catégories (ajout).
+- Gestion des catégories : ajout, modification de la TVA, suppression (refusée si des produits y sont associés).
 - Accès protégé par `exiger_admin()`.
 - CSRF et validation serveur sur chaque formulaire.
 - Échappement systématique des sorties avec `h()`.
