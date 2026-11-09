@@ -4,7 +4,7 @@ require __DIR__ . '/config.php';
 exiger_connexion();
 
 // On relit l'utilisateur en base (au cas où il aurait été supprimé)
-$st = db()->prepare('SELECT user_login, user_mail, user_date_new, user_date_login FROM `user` WHERE user_id = :id');
+$st = db()->prepare('SELECT user_login, user_mail, user_date_new FROM `user` WHERE user_id = :id');
 $st->execute(['id' => $_SESSION['user_id']]);
 $u = $st->fetch();
 
@@ -20,7 +20,6 @@ require __DIR__ . '/templates/header.php';
 <ul>
   <li>E-mail : <?= h($u['user_mail']) ?></li>
   <li>Inscrit le : <?= h($u['user_date_new']) ?></li>
-  <li>Dernière connexion : <?= h($u['user_date_login']) ?></li>
 </ul>
 <form method="post" action="deconnexion.php">
   <?= csrf_champ() ?>

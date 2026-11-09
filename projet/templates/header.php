@@ -23,6 +23,7 @@
 
         <?php if (est_admin()): ?>
           <a href="/produits/liste.php">Gestion Produits</a>
+          <a href="/utilisateurs/liste.php">Gestion Utilisateurs</a>
           <a href="/categories/ajout.php">+ Catégorie</a>
         <?php endif; ?>
 

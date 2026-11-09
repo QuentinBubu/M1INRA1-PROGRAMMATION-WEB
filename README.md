@@ -2,7 +2,7 @@
 
 Boutique e-commerce développée en **PHP 8.3 sans framework**, avec MySQL 8.4, Docker et Xdebug.
 
-Le projet couvre le fil rouge du cours : authentification, CRUD produits/catégories, backoffice admin, catalogue et panier.
+Le projet couvre le fil rouge du cours : authentification, CRUD utilisateurs/produits/catégories, backoffice admin, catalogue et panier.
 
 ---
 
@@ -66,6 +66,7 @@ Les nouveaux comptes créés via l'inscription reçoivent automatiquement une li
 │   ├── Entities/             # ProductEntity, PrixEntity, CategorieEntity
 │   ├── templates/            # header.php / footer.php
 │   ├── produits/             # Catalogue + backoffice CRUD
+│   ├── utilisateurs/         # Backoffice CRUD utilisateurs + rôles
 │   ├── categories/           # Ajout, modification de TVA, suppression
 │   └── assets/               # CSS, JS, image par défaut
 └── .env.example              # Modèle de configuration
@@ -86,11 +87,12 @@ Les nouveaux comptes créés via l'inscription reçoivent automatiquement une li
 ### Catalogue
 - Liste des produits actifs (`is_deleted = 0`).
 - Prix HT / TTC avec TVA par catégorie.
-- Promotion en pourcentage (affichage).
+- Promotion en pourcentage saisissable dans le backoffice.
 - Image par défaut si aucune image n'est renseignée.
 
 ### Backoffice (admin)
 - Liste des produits, ajout, modification, suppression logique.
+- Gestion des utilisateurs : liste, ajout, modification des informations et du rôle, suppression.
 - Gestion des catégories : ajout, modification de la TVA, suppression (refusée si des produits y sont associés).
 - Accès protégé par `exiger_admin()`.
 - CSRF et validation serveur sur chaque formulaire.
@@ -109,7 +111,8 @@ Les nouveaux comptes créés via l'inscription reçoivent automatiquement une li
 - Échappement XSS via `h()` / `htmlspecialchars`.
 - Jetons CSRF sur les formulaires POST.
 - Contrôle d'accès admin centralisé.
-- Validation serveur des entrées (produits, catégories, inscription).
+- Validation serveur des entrées (produits, catégories, utilisateurs, inscription).
+- Impossible de supprimer son propre compte ou de retirer le rôle du dernier administrateur.
 - En-têtes HTTP : `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`, CSP.
 - Secrets dans `.env`, non versionné.
 

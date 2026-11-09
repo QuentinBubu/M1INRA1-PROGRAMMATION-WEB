@@ -332,6 +332,33 @@ function deconnecter(): void
 
 /* ========== Validation ========== */
 /**
+ * Valide les informations d'identite d'un utilisateur.
+ *
+ * @param string $login Identifiant souhaite.
+ * @param string $mail Adresse e-mail saisie.
+ * @param string $prenom Prenom saisi.
+ * @param string $nom Nom saisi.
+ * @return array<int, string> Liste des erreurs de validation.
+ */
+function valider_infos_utilisateur(string $login, string $mail, string $prenom, string $nom): array
+{
+    $e = [];
+    if (!preg_match('/^[A-Za-z0-9_.-]{3,30}$/', $login)) {
+        $e[] = 'Identifiant : 3 à 30 caractères (lettres, chiffres, _ . -).';
+    }
+    if (strlen($mail) > 254 || !filter_var($mail, FILTER_VALIDATE_EMAIL)) {
+        $e[] = 'Adresse e-mail invalide.';
+    }
+    if (!preg_match("/^[\p{L} '-]{1,100}$/u", $prenom)) {
+        $e[] = 'Prénom invalide (100 caractères maximum).';
+    }
+    if (!preg_match("/^[\p{L} '-]{1,100}$/u", $nom)) {
+        $e[] = 'Nom invalide (100 caractères maximum).';
+    }
+    return $e;
+}
+
+/**
  * Valide les donnees saisies lors d'une inscription.
  *
  * @param string $login Identifiant souhaite.
@@ -348,19 +375,8 @@ function valider_inscription(
     string $prenom = '',
     string $nom = ''
 ): array {
-    $e = [];
-    if (!preg_match('/^[A-Za-z0-9_.-]{3,30}$/', $login)) {
-        $e[] = 'Identifiant : 3 à 30 caractères (lettres, chiffres, _ . -).';
-    }
-    if (strlen($mail) > 254 || !filter_var($mail, FILTER_VALIDATE_EMAIL)) {
-        $e[] = 'Adresse e-mail invalide.';
-    }
-    if (!preg_match("/^[\p{L} '-]{1,100}$/u", $prenom)) {
-        $e[] = 'Prénom invalide (100 caractères maximum).';
-    }
-    if (!preg_match("/^[\p{L} '-]{1,100}$/u", $nom)) {
-        $e[] = 'Nom invalide (100 caractères maximum).';
-    }
+    $e = valider_infos_utilisateur($login, $mail, $prenom, $nom);
+
     if (mb_strlen($mdp) < 12) {
         $e[] = 'Le mot de passe doit contenir au moins 12 caractères.';
     } elseif (mb_strlen($mdp) > 200) {
@@ -379,8 +395,13 @@ function creer_utilisateur(
     string $mail,
     string $mdp,
     string $prenom,
-    string $nom
+    string $nom,
+    string $role = 'client'
 ): int|string {
+    if (!in_array($role, ['client', 'admin'], true)) {
+        return 'Rôle invalide.';
+    }
+
     $pdo = db();
     $hash = password_hash($mdp, PASSWORD_ARGON2ID);
 
@@ -410,13 +431,13 @@ function creer_utilisateur(
         );
         $compte->execute(['id' => $userId, 'prenom' => $prenom, 'nom' => $nom]);
 
-        // Attribuer le rôle « client » par défaut
-        $role = $pdo->prepare('SELECT id_role FROM role WHERE libelle_role = :r LIMIT 1');
-        $role->execute(['r' => 'client']);
-        $idRole = $role->fetchColumn();
+        // Attribuer le rôle demandé (« client » par défaut)
+        $roleStmt = $pdo->prepare('SELECT id_role FROM role WHERE libelle_role = :r LIMIT 1');
+        $roleStmt->execute(['r' => $role]);
+        $idRole = $roleStmt->fetchColumn();
 
         if ($idRole === false) {
-            throw new RuntimeException('Le rôle « client » est absent de la base de données.');
+            throw new RuntimeException('Le rôle demandé est absent de la base de données.');
         }
 
         $droit = $pdo->prepare('INSERT INTO droit (user_id, id_role) VALUES (:id, :role)');
@@ -525,6 +546,23 @@ function roles_utilisateur(int $userId): array
 }
 
 /**
+ * Compte les utilisateurs possédant le rôle « admin ».
+ *
+ * @return int Nombre d'administrateurs.
+ */
+function compter_admins(): int
+{
+    $st = db()->query(
+        'SELECT COUNT(DISTINCT d.user_id)
+         FROM droit d
+         INNER JOIN role r ON r.id_role = d.id_role
+         WHERE r.libelle_role = \'admin\''
+    );
+
+    return (int) $st->fetchColumn();
+}
+
+/**
  * Indique si l'utilisateur connecté possède le rôle « admin ».
  *
  * @return bool true si l'utilisateur est administrateur.
@@ -534,11 +572,16 @@ function est_admin(): bool
     if (!est_connecte()) {
         return false;
     }
-    if (!isset($_SESSION['roles']) || !is_array($_SESSION['roles'])) {
-        $_SESSION['roles'] = roles_utilisateur((int) $_SESSION['user_id']);
+
+    // Recharge les rôles à chaque requête pour qu'un changement de rôle
+    // soit appliqué immédiatement, sans attendre une reconnexion.
+    static $roles = null;
+    if ($roles === null) {
+        $roles = roles_utilisateur((int) $_SESSION['user_id']);
+        $_SESSION['roles'] = $roles;
     }
 
-    return in_array('admin', $_SESSION['roles'], true);
+    return in_array('admin', $roles, true);
 }
 
 /**
