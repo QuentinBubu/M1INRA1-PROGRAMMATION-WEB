@@ -183,7 +183,6 @@ Les nouveaux comptes créés via l'inscription reçoivent automatiquement une li
 - API REST native + JSON Schema.
 - Crawler.
 - TD Laravel et TD API Platform.
-- TP noté : jeu JavaScript + comptes et scores en PHP.
 - SEO avancé / audit Lighthouse, axe et W3C.
 
 ---
