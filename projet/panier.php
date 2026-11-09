@@ -37,7 +37,7 @@ require __DIR__ . '/templates/header.php';
         <div class="panier-lignes">
             <?php foreach ($lignes as $ligne): ?>
                 <article class="ligne-panier">
-                    <img src="<?= h($ligne['url_image_p'] ?: 'https://picsum.photos/120/120') ?>" alt="<?= h($ligne['designation_p']) ?>">
+                    <img src="<?= h($ligne['url_image_p'] ?: image_defaut()) ?>" alt="<?= h($ligne['designation_p']) ?>">
                     <div>
                         <h2><?= h($ligne['designation_p']) ?></h2>
                         <p><?= number_format((float) $ligne['prix_ttc'], 2, ',', ' ') ?> € TTC l'unité</p>

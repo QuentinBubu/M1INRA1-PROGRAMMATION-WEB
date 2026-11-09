@@ -1,2 +1,5 @@
 mcd.lo1
 LoopingImage.jpg
+
+# Secrets et configuration locale
+.env

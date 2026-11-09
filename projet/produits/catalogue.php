@@ -95,7 +95,7 @@ require_once __DIR__ . '/../templates/header.php';
             <article class="produit">
                 <h2><?= h($produit->getDesignationP()) ?></h2>
                 <img
-                    src="<?= h($produit->getUrlImageP() ?: 'https://picsum.photos/200/300') ?>"
+                    src="<?= h($produit->getUrlImageP() ?: image_defaut()) ?>"
                     alt="<?= h($produit->getDesignationP()) ?>"
                 >
                 <p>Stock : <?= h((string) $produit->getStockP()) ?></p>

@@ -48,10 +48,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $titre = 'Connexion';
 require __DIR__ . '/templates/header.php';
 ?>
-<form method="post" novalidate>
+<form method="post">
   <?= csrf_champ() ?>
   <label>Identifiant ou e-mail
-    <input type="text" name="identifiant" value="<?= h($identifiant) ?>" required maxlength="254" autocomplete="username">
+    <input type="text" name="identifiant" value="<?= h($identifiant) ?>" required maxlength="254"
+           pattern="[A-Za-z0-9_.@-]{3,254}" autocomplete="username">
   </label>
   <label>Mot de passe
     <input type="password" name="mdp" required maxlength="200" autocomplete="current-password">

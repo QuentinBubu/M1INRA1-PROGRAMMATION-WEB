@@ -122,3 +122,22 @@ INSERT INTO categorie (categorie_id, libelle_c, taxe_c) VALUES
   (4, 'Montre connectée', 0.20),
   (5, 'Tablette', 0.20),
   (6, 'Caméra', 0.20);
+
+-- -----------------------------------------------------
+-- Compte administrateur par défaut
+-- Identifiant : admin
+-- Mot de passe : Admin1234!2026  (À CHANGER après la première connexion)
+-- -----------------------------------------------------
+INSERT IGNORE INTO `user` (user_login, user_password, user_mail) VALUES
+  ('admin',
+   '$argon2id$v=19$m=65536,t=4,p=1$a2U1aEdiWVhHVkZCTGFrRw$uDgt/0MMSmb5AeAoXzsdIZksJj0E33ddTQsuPIbZIqM',
+   'admin@example.com');
+
+INSERT IGNORE INTO compte (user_id, prenom_c, nom_c)
+SELECT user_id, 'Admin', 'Admin' FROM `user` WHERE user_login = 'admin';
+
+INSERT IGNORE INTO droit (user_id, id_role)
+SELECT u.user_id, r.id_role
+FROM `user` u
+INNER JOIN role r ON r.libelle_role = 'admin'
+WHERE u.user_login = 'admin';

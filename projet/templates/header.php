@@ -3,6 +3,9 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Site e-commerce de vente de produits de toute denrée">
+  <meta name="author" content="Section Scratch M1 2026-2027 G-X">
+  <meta name="keyword" content="e-commerce, vente, produits, denrée">
   <title><?= h($titre ?? 'E-Commerce') ?></title>
   <link rel="stylesheet" href="/assets/styles/style.css">
 </head>
@@ -12,7 +15,7 @@
   <header class="navbar">
     <nav class="nav-container">
       <a href="/index.php" class="nav-brand">Boutique</a>
-      
+
       <div class="nav-links">
         <a href="/index.php">Accueil</a>
         <a href="/produits/catalogue.php">Catalogue</a>

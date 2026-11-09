@@ -340,14 +340,26 @@ function deconnecter(): void
  * @param string $mdp2 Confirmation du mot de passe.
  * @return array<int, string> Liste des erreurs de validation.
  */
-function valider_inscription(string $login, string $mail, string $mdp, string $mdp2): array
-{
+function valider_inscription(
+    string $login,
+    string $mail,
+    string $mdp,
+    string $mdp2,
+    string $prenom = '',
+    string $nom = ''
+): array {
     $e = [];
     if (!preg_match('/^[A-Za-z0-9_.-]{3,30}$/', $login)) {
         $e[] = 'Identifiant : 3 à 30 caractères (lettres, chiffres, _ . -).';
     }
     if (strlen($mail) > 254 || !filter_var($mail, FILTER_VALIDATE_EMAIL)) {
         $e[] = 'Adresse e-mail invalide.';
+    }
+    if (!preg_match("/^[\p{L} '-]{1,100}$/u", $prenom)) {
+        $e[] = 'Prénom invalide (100 caractères maximum).';
+    }
+    if (!preg_match("/^[\p{L} '-]{1,100}$/u", $nom)) {
+        $e[] = 'Nom invalide (100 caractères maximum).';
     }
     if (mb_strlen($mdp) < 12) {
         $e[] = 'Le mot de passe doit contenir au moins 12 caractères.';
@@ -362,8 +374,13 @@ function valider_inscription(string $login, string $mail, string $mdp, string $m
     return $e;
 }
 
-function creer_utilisateur(string $login, string $mail, string $mdp): int|string
-{
+function creer_utilisateur(
+    string $login,
+    string $mail,
+    string $mdp,
+    string $prenom,
+    string $nom
+): int|string {
     $pdo = db();
     $hash = password_hash($mdp, PASSWORD_ARGON2ID);
 
@@ -374,6 +391,7 @@ function creer_utilisateur(string $login, string $mail, string $mdp): int|string
         $st = $pdo->prepare('SELECT 1 FROM `user` WHERE user_login = :l OR user_mail = :m LIMIT 1');
         $st->execute(['l' => $login, 'm' => $mail]);
         if ($st->fetchColumn()) {
+            $pdo->rollBack();
             return 'Identifiant ou e-mail déjà utilisé.';
         }
 
@@ -383,19 +401,92 @@ function creer_utilisateur(string $login, string $mail, string $mdp): int|string
             VALUES (:l, :p, :m)'
         );
         $ins->execute(['l' => $login, 'p' => $hash, 'm' => $mail]);
+        $userId = (int) $pdo->lastInsertId();
 
-        // /!\ TO DO : créer un compte associé si nécessaire, et récupérer son ID
+        // Créer le compte client associé (informations de livraison)
+        $compte = $pdo->prepare(
+            'INSERT INTO compte (user_id, prenom_c, nom_c, adresse_livraison_c, telephone_c)
+             VALUES (:id, :prenom, :nom, NULL, NULL)'
+        );
+        $compte->execute(['id' => $userId, 'prenom' => $prenom, 'nom' => $nom]);
 
-        // Commit la transaction
+        // Attribuer le rôle « client » par défaut
+        $role = $pdo->prepare('SELECT id_role FROM role WHERE libelle_role = :r LIMIT 1');
+        $role->execute(['r' => 'client']);
+        $idRole = $role->fetchColumn();
+
+        if ($idRole === false) {
+            throw new RuntimeException('Le rôle « client » est absent de la base de données.');
+        }
+
+        $droit = $pdo->prepare('INSERT INTO droit (user_id, id_role) VALUES (:id, :role)');
+        $droit->execute(['id' => $userId, 'role' => (int) $idRole]);
+
         $pdo->commit();
-        $id = (int) $pdo->lastInsertId();
-        return $id;
+
+        return $userId;
     } catch (PDOException $e) {
         if ($pdo->inTransaction()) {
             $pdo->rollBack();
         }
         throw $e;
+    } catch (Throwable $e) {
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
+        throw $e;
     }
+}
+
+/* ========== Validation des produits ========== */
+/**
+ * Valide et normalise les données d'un formulaire produit.
+ *
+ * @param array<string, mixed> $post Données POST.
+ * @return array{0: array<string, mixed>, 1: array<int, string>} Données normalisées et erreurs.
+ */
+function valider_produit(array $post): array
+{
+    $erreurs = [];
+
+    $designation = trim((string) ($post['designation'] ?? ''));
+    $stock = filter_var($post['stock'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 0]]);
+    $dateIn = trim((string) ($post['date_in'] ?? ''));
+    $prix = filter_var($post['prix'] ?? null, FILTER_VALIDATE_FLOAT, ['options' => ['min_range' => 0]]);
+    $categorieId = filter_var($post['categorie_id'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+
+    if ($designation === '' || mb_strlen($designation) > 255) {
+        $erreurs[] = 'La désignation est obligatoire (255 caractères maximum).';
+    }
+    if ($stock === false) {
+        $erreurs[] = 'Le stock doit être un entier positif ou nul.';
+    }
+    if ($prix === false) {
+        $erreurs[] = 'Le prix HT doit être un nombre positif ou nul.';
+    }
+    if (
+        !preg_match('/^\d{4}-\d{2}-\d{2}$/', $dateIn)
+        || ($d = DateTimeImmutable::createFromFormat('Y-m-d', $dateIn)) === false
+        || $d->format('Y-m-d') !== $dateIn
+    ) {
+        $erreurs[] = 'La date d\'entrée est invalide.';
+    }
+    if ($categorieId === false) {
+        $erreurs[] = 'La catégorie est obligatoire.';
+    } else {
+        $st = db()->prepare('SELECT 1 FROM categorie WHERE categorie_id = :id LIMIT 1');
+        $st->execute(['id' => $categorieId]);
+        if (!$st->fetchColumn()) {
+            $erreurs[] = 'La catégorie sélectionnée n\'existe pas.';
+        }
+    }
+    return [[
+        'designation'  => $designation,
+        'stock'        => $stock === false ? 0 : (int) $stock,
+        'date_in'      => $dateIn,
+        'prix'         => $prix === false ? 0.0 : (float) $prix,
+        'categorie_id' => $categorieId === false ? 0 : (int) $categorieId,
+    ], $erreurs];
 }
 
 /* ========== Administration ========== */
@@ -445,11 +536,34 @@ function exiger_admin(): void
 {
     if (!est_admin()) {
         flash_set('Accès réservé aux administrateurs.');
-        rediriger('/connexion.php');
+        rediriger(est_connecte() ? '/profil.php' : '/connexion.php');
     }
 }
 
 /* ========== Upload d'images ========== */
+/**
+ * Indique si une URL ou un chemin d'image est acceptable.
+ *
+ * Accepte une URL absolue http(s) ou un chemin local commençant par « / ».
+ *
+ * @param string $url URL ou chemin à vérifier.
+ * @return bool true si le chemin est valide.
+ */
+function url_image_valide(string $url): bool
+{
+    if ($url === '') {
+        return true;
+    }
+    if (str_starts_with($url, '/')) {
+        return true;
+    }
+
+    $scheme = parse_url($url, PHP_URL_SCHEME);
+
+    return filter_var($url, FILTER_VALIDATE_URL) !== false
+        && in_array($scheme, ['http', 'https'], true);
+}
+
 /**
  * Enregistre une image envoyée et retourne son chemin relatif.
  *
@@ -492,12 +606,13 @@ function upload_image(string $champ): ?string
     if (!is_dir($dossier)) {
         mkdir($dossier, 0775, true);
     }
-    $chemin = 'uploads/' . bin2hex(random_bytes(8)) . '.' . $extension;
-    if (!move_uploaded_file((string) $fichier['tmp_name'], __DIR__ . '/' . $chemin)) {
+    $nomFichier = bin2hex(random_bytes(8)) . '.' . $extension;
+    if (!move_uploaded_file((string) $fichier['tmp_name'], __DIR__ . '/uploads/' . $nomFichier)) {
         throw new RuntimeException('Impossible d\'enregistrer l\'image.');
     }
 
-    return $chemin;
+    // Chemin absolu depuis la racine du site : fonctionne depuis tous les sous-dossiers.
+    return '/uploads/' . $nomFichier;
 }
 
 /**
@@ -507,5 +622,5 @@ function upload_image(string $champ): ?string
  */
 function image_defaut(): string
 {
-    return 'assets/img/defaut.svg';
+    return '/assets/img/defaut.svg';
 }

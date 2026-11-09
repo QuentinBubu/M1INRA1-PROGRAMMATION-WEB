@@ -7,6 +7,69 @@ body {
   padding: 3rem 1rem;
 }
 
+/* Pied de page */
+.site-footer {
+  width: 100%;
+  max-width: 1000px;
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid #d1d5db;
+  color: #64748b;
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+.site-footer p {
+  margin: 0.25rem 0;
+}
+
+/* Tableau du backoffice */
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.table-admin {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.table-admin th,
+.table-admin td {
+  padding: 0.6rem;
+  border-bottom: 1px solid #e2e8f0;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.table-admin th {
+  background: #f1f5f9;
+  color: #172033;
+}
+
+.table-admin .actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.table-admin .actions form {
+  display: inline;
+}
+
+.table-admin .actions button {
+  width: auto;
+  margin: 0;
+  padding: 0.35rem 0.6rem;
+  background: #b91c1c;
+  font-size: 0.85rem;
+}
+
+.table-admin .actions a {
+  color: #2563eb;
+}
+
 main {
   background: #fff;
   padding: 2rem;

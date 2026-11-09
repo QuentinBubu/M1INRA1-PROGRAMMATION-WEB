@@ -85,12 +85,12 @@ class PrixEntity
     /**
      * Calcule le prix TTC à partir du prix HT et d'un taux de TVA.
      *
-     * @param float $tvaRate Taux de TVA (par défaut 20%).
+     * @param float $tvaRate Taux de TVA (par défaut 20 %).
      *
      * @return float Prix TTC.
      */
-    public function getPrixTtc(float $tvaRate = 1.2): float
+    public function getPrixTtc(float $tvaRate = 0.20): float
     {
-        return $this->prix_ht * (1 + $tvaRate);
+        return round($this->prix_ht * (1 + $tvaRate), 2);
     }
 }
