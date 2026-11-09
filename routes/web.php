@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ProduitController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -25,4 +26,11 @@ Route::prefix('api')->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/produits-form', [ProduitController::class, 'store']);
+});
+
+Route::prefix('admin')->group(function () {
+    Route::get('/users', [UserController::class, 'index'])->name('users.index');
+    Route::get('/users/{user_id}/edit', [UserController::class, 'edit'])->name('users.edit');
+    Route::put('/users/{user_id}', [UserController::class, 'update'])->name('users.update');
+    Route::delete('/users/{user_id}', [UserController::class, 'destroy'])->name('users.destroy');
 });
