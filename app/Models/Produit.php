@@ -3,10 +3,23 @@
 namespace App\Models;
 
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\QueryParameter;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-#[ApiResource]
+#[ApiResource(
+    operations: [
+        new GetCollection(
+            parameters: [
+                'typeP' => new QueryParameter(required: false),
+            ]
+        ),
+        new Get(),
+    ]
+)]
 class Produit extends Model
 {
 
@@ -58,5 +71,18 @@ class Produit extends Model
         }
 
         return asset('storage/' . $this->image);
+    }
+
+    protected static function booted()
+    {
+        static::addGlobalScope('filterByType', function (Builder $builder) {
+            $request = request();
+
+            if ($request->has('typeP')) {
+                $builder->where('type_p', $request->query('typeP'));
+            } elseif ($request->has('type_p')) {
+                $builder->where('type_p', $request->query('type_p'));
+            }
+        });
     }
 }
