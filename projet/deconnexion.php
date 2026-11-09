@@ -9,4 +9,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && csrf_valide()) {
     flash_set('Vous êtes déconnecté.');
     rediriger('connexion.php');
 }
-rediriger(est_connecte() ? 'profil.php' : 'connexion.php');
+rediriger(est_connecte() ? '/profil.php' : '/connexion.php');

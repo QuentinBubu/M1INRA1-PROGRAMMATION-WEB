@@ -38,7 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             ouvrir_session($u);
-            rediriger('profil.php');
+            rediriger('/profil.php');
         }
 
         $erreurs[] = $messageGenerique;

@@ -10,7 +10,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $st = db()->prepare('INSERT INTO categorie (libelle_c, taxe_c) VALUES (:libelle_c, :taxe_c)');
     $st->execute(['libelle_c' => $libelle, 'taxe_c' => $taxe / 100]);
 
-    rediriger('/categories/liste.php');
+    rediriger('/produits/liste.php');
 }
 
 require __DIR__ . '/../templates/header.php';
