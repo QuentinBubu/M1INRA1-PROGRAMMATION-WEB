@@ -25,6 +25,7 @@ require __DIR__ . '/templates/header.php';
 ?>
 
 <link rel="stylesheet" href="./assets/styles/panier.css">
+<script src="/assets/js/panier.js" defer></script>
 
 <?php if ($lignes === []): ?>
     <section class="panier-vide">
@@ -36,7 +37,8 @@ require __DIR__ . '/templates/header.php';
         <?= csrf_champ() ?>
         <div class="panier-lignes">
             <?php foreach ($lignes as $ligne): ?>
-                <article class="ligne-panier">
+                <article class="ligne-panier"
+                         data-prix-unitaire="<?= h(number_format((float) $ligne['prix_ttc'], 2, '.', '')) ?>">
                     <img src="<?= h($ligne['url_image_p'] ?: image_defaut()) ?>" alt="<?= h($ligne['designation_p']) ?>">
                     <div>
                         <h2><?= h($ligne['designation_p']) ?></h2>
@@ -44,9 +46,10 @@ require __DIR__ . '/templates/header.php';
                     </div>
                     <label>
                         Quantité
-                        <input type="number" name="quantites[<?= h((string) $ligne['p_id']) ?>]" min="0" max="<?= h((string) $ligne['stock_p']) ?>" value="<?= h((string) $ligne['quantite']) ?>">
+                        <input type="number" name="quantites[<?= h((string) $ligne['p_id']) ?>]" min="0" max="<?= h((string) $ligne['stock_p']) ?>" step="1"
+                               data-quantite value="<?= h((string) $ligne['quantite']) ?>">
                     </label>
-                    <strong><?= number_format((float) $ligne['sous_total'], 2, ',', ' ') ?> €</strong>
+                    <strong data-ligne-total><?= number_format((float) $ligne['sous_total'], 2, ',', ' ') ?> €</strong>
                 </article>
             <?php endforeach; ?>
         </div>
@@ -58,7 +61,7 @@ require __DIR__ . '/templates/header.php';
 
     <aside class="panier-total">
         <span>Total TTC</span>
-        <strong><?= number_format((float) $total, 2, ',', ' ') ?> €</strong>
+        <strong data-total-panier aria-live="polite"><?= number_format((float) $total, 2, ',', ' ') ?> €</strong>
         <button type="button" disabled>Passer la commande</button>
     </aside>
 <?php endif; ?>

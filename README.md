@@ -86,6 +86,7 @@ Les nouveaux comptes créés via l'inscription reçoivent automatiquement une li
 
 ### Catalogue
 - Liste des produits actifs (`is_deleted = 0`).
+- Tri/filtre par type de produit, avec conservation du filtre après ajout au panier.
 - Prix HT / TTC avec TVA par catégorie.
 - Promotion en pourcentage saisissable dans le backoffice.
 - Image par défaut si aucune image n'est renseignée.
@@ -102,6 +103,7 @@ Les nouveaux comptes créés via l'inscription reçoivent automatiquement une li
 - Ajout avec contrôle du stock.
 - Modification des quantités et suppression (quantité 0).
 - Calcul de la TVA et du total TTC en session.
+- Mise à jour dynamique des sous-totaux et du total TTC lors du changement de quantité.
 
 ---
 
@@ -120,7 +122,6 @@ Les nouveaux comptes créés via l'inscription reçoivent automatiquement une li
 
 ## 6. Reste à faire (roadmap)
 
-- Filtre/tri du catalogue par type de produit.
 - Frais de port et mise à jour dynamique du montant.
 - Tunnel de commande (`commande` / `ligne_commande`).
 - API REST native + JSON Schema.

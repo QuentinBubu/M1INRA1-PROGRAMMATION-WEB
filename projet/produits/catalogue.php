@@ -9,6 +9,24 @@ require_once __DIR__ . '/../Entities/CategorieEntity.php';
 
 $erreurs = [];
 
+// Catégories disponibles pour le tri par type de produit.
+$categories = db()->query(
+    'SELECT categorie_id, libelle_c
+     FROM categorie
+     ORDER BY libelle_c'
+)->fetchAll();
+$categorieIds = array_map('intval', array_column($categories, 'categorie_id'));
+
+// Filtre sélectionné : identifiant entier existant, sinon aucun filtre.
+$categorieFiltre = filter_var(
+    $_GET['categorie'] ?? null,
+    FILTER_VALIDATE_INT,
+    ['options' => ['min_range' => 1]]
+);
+if ($categorieFiltre === false || !in_array($categorieFiltre, $categorieIds, true)) {
+    $categorieFiltre = null;
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!csrf_valide()) {
         $erreurs[] = 'La requête a expiré, veuillez réessayer.';
@@ -21,7 +39,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $erreurs[] = $message;
         } else {
             flash_set('Produit ajouté au panier.');
-            rediriger('/produits/catalogue.php');
+
+            // On conserve le filtre après l'ajout au panier.
+            $categorieRetour = filter_var(
+                $_POST['categorie'] ?? null,
+                FILTER_VALIDATE_INT,
+                ['options' => ['min_range' => 1]]
+            );
+            if ($categorieRetour !== false && in_array($categorieRetour, $categorieIds, true)) {
+                $categorieFiltre = $categorieRetour;
+            }
+
+            $url = '/produits/catalogue.php';
+            if ($categorieFiltre !== null) {
+                $url .= '?categorie=' . $categorieFiltre;
+            }
+            rediriger($url);
         }
     }
 }
@@ -48,8 +81,22 @@ SELECT
 FROM produit p
 INNER JOIN categorie c ON c.categorie_id = p.categorie_id
 WHERE p.is_deleted = 0
-ORDER BY p.designation_p ASC
 SQL;
+
+$parametres = [];
+if ($categorieFiltre !== null) {
+    $sql .= ' AND p.categorie_id = :categorie_id';
+    $parametres['categorie_id'] = $categorieFiltre;
+}
+
+// Sans filtre : tri par type puis par désignation.
+// Avec filtre : tri par désignation dans le type choisi.
+$sql .= $categorieFiltre === null
+    ? ' ORDER BY c.libelle_c ASC, p.designation_p ASC'
+    : ' ORDER BY p.designation_p ASC';
+
+$st = db()->prepare($sql);
+$st->execute($parametres);
 
 $tlProduits = array_map(static function (array $produit): ProductEntity {
     $categorie = (new CategorieEntity())
@@ -72,7 +119,7 @@ $tlProduits = array_map(static function (array $produit): ProductEntity {
     }
 
     return $entity;
-}, db()->query($sql)->fetchAll());
+}, $st->fetchAll());
 
 $titre = 'Catalogue';
 
@@ -80,6 +127,25 @@ require_once __DIR__ . '/../templates/header.php';
 ?>
 
 <link rel="stylesheet" href="../assets/styles/catalogue.css">
+<script src="/assets/js/catalogue.js" defer></script>
+
+<form method="get" class="filtre-catalogue">
+    <label for="categorie">Trier par type de produit</label>
+    <select name="categorie" id="categorie">
+        <option value="">Tous les types</option>
+        <?php foreach ($categories as $categorie): ?>
+            <option value="<?= h((string) $categorie['categorie_id']) ?>"
+                <?= $categorieFiltre === (int) $categorie['categorie_id'] ? 'selected' : '' ?>>
+                <?= h($categorie['libelle_c']) ?>
+            </option>
+        <?php endforeach; ?>
+    </select>
+
+    <?php // Bouton de secours si JavaScript est désactivé. ?>
+    <noscript>
+        <button type="submit">Trier</button>
+    </noscript>
+</form>
 
 <p class="lien-panier">
     <a class="bouton secondaire" href="../panier.php">
@@ -119,6 +185,9 @@ require_once __DIR__ . '/../templates/header.php';
                 <?php elseif ($produit->hasPrix()): ?>
                     <form method="post">
                         <?= csrf_champ() ?>
+                        <?php if ($categorieFiltre !== null): ?>
+                            <input type="hidden" name="categorie" value="<?= h((string) $categorieFiltre) ?>">
+                        <?php endif; ?>
                         <input type="hidden" name="p_id" value="<?= h((string) $produit->getPId()) ?>">
                         <label>
                             Quantité
