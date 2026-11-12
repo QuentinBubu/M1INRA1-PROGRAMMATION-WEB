@@ -5,7 +5,10 @@ use App\Http\Controllers\ProduitController;
 use App\Http\Controllers\VenteController;
 use Illuminate\Support\Facades\Route;
 
-Route::post('/login', [AuthController::class, 'login']);
+Route::middleware('web')->group(function () {
+    Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth');
+});
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/produits-form', [ProduitController::class, 'store']);
 

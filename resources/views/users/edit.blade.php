@@ -3,11 +3,14 @@
 
 <head>
     <meta charset="UTF-8">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Editer l'utilisateur</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{{ asset('css/navbar.css') }}">
 </head>
 
 <body class="bg-gray-100 p-8">
+    @include('partials.navbar')
     <div class="max-w-xl mx-auto bg-white p-6 rounded-lg shadow">
         <h1 class="text-2xl font-bold mb-6">Modifier l'utilisateur #{{ $user->user_id }}</h1>
 

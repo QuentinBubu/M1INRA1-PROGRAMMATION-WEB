@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
@@ -17,12 +18,23 @@ class AuthController extends Controller
             return response()->json(['message' => 'Identifiants incorrects'], 401);
         }
 
+        Auth::login($user);
+        $request->session()->regenerate();
         $user->update(['user_date_login' => now()]);
 
         return response()->json([
             'message' => 'Connexion réussie',
             'user' => $user
         ], 200);
+    }
+
+    public function logout(Request $request)
+    {
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return response()->json(['message' => 'Déconnexion réussie']);
     }
 
 

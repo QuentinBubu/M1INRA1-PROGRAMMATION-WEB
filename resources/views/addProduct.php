@@ -6,9 +6,11 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link rel="stylesheet" href="<?= asset('css/login.css') ?>">
         <link rel="stylesheet" href="<?= asset('css/products.css') ?>">
+        <link rel="stylesheet" href="<?= asset('css/navbar.css') ?>">
         <title>Ajout de produit</title>
     </head>
     <body class="products-page">
+        <?= view('partials.navbar')->render() ?>
         <main class="product-card">
             <h1>Ajouter un produit</h1>
             <p><a href="/produits">Voir la liste des produits</a></p>

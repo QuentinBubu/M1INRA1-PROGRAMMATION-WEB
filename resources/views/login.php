@@ -3,6 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="<?= csrf_token() ?>">
     <title>Connexion - Application Client</title>
 
     <link rel="stylesheet" href="<?= asset('css/login.css') ?>">
@@ -16,15 +17,16 @@
             <p class="instruction">Veuillez saisir vos identifiants pour accéder à votre espace client et gérer vos commandes.</p>
         </header>
 
-        <form id="loginForm">
+        <form id="loginForm" autocomplete="on">
             <div class="form-group">
                 <label for="login">Identifiant utilisateur</label>
-                <input type="text" id="login" name="login" required placeholder="Ex: jean.dupont">
+                <input type="text" id="login" name="login" autocomplete="username" required placeholder="Ex: jean.dupont">
             </div>
 
             <div class="form-group">
                 <label for="password">Mot de passe</label>
                 <input type="password" id="password" name="password" required
+                       autocomplete="current-password"
                        pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"
                        title="8 caractères minimum, au moins une majuscule, une minuscule et un chiffre."
                        placeholder="Votre mot de passe sécurisé">
@@ -64,7 +66,8 @@
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Accept': 'application/json'
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
                 },
                 body: JSON.stringify(formData)
             });

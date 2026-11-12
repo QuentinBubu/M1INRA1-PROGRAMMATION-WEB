@@ -18,13 +18,14 @@
             </p>
         </header>
 
-        <form id="registerForm">
+        <form id="registerForm" autocomplete="on">
             <div class="form-group">
                 <label for="login">Identifiant</label>
                 <input
                     type="text"
                     id="login"
                     name="login"
+                    autocomplete="username"
                     required
                     maxlength="255"
                     placeholder="Ex : jean.dupont"
@@ -37,6 +38,7 @@
                     type="email"
                     id="email"
                     name="email"
+                    autocomplete="email"
                     required
                     maxlength="255"
                     placeholder="jean.dupont@example.com"
@@ -49,6 +51,7 @@
                     type="password"
                     id="password"
                     name="password"
+                    autocomplete="new-password"
                     required
                     minlength="8"
                     pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"
@@ -62,6 +65,7 @@
                     type="password"
                     id="password_confirmation"
                     name="password_confirmation"
+                    autocomplete="new-password"
                     required
                     minlength="8"
                 >

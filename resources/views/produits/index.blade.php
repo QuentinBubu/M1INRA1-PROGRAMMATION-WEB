@@ -5,9 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ asset('css/login.css') }}">
     <link rel="stylesheet" href="{{ asset('css/products.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/navbar.css') }}">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Gestion des produits</title>
 </head>
 <body class="products-page">
+    @include('partials.navbar')
     <main class="product-card">
         <h1>Gestion des produits</h1>
 

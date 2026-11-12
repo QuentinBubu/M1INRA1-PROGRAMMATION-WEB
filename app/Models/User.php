@@ -6,13 +6,13 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\ApiProperty;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 
 #[Fillable(['name', 'email', 'password'])]
 #[Hidden(['password', 'remember_token'])]
 
 #[ApiResource]
-class User extends Model
+class User extends Authenticatable
 {
 
     protected $table = 'user';
@@ -32,4 +32,14 @@ class User extends Model
     protected $hidden = [
         'user_password',
     ];
+
+    public function getAuthPasswordName(): string
+    {
+        return 'user_password';
+    }
+
+    public function getAuthPassword(): string
+    {
+        return (string) $this->user_password;
+    }
 }
