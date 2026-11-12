@@ -12,7 +12,7 @@ use Faker\Factory;
  *   php scripts/seed_produits.php 50
  *
  * Le script lit les identifiants MySQL dans .env.
- * Par défaut, il se connecte à 127.0.0.1 (port exposé par Docker).
+ * Par défaut, il se connecte à 127.0.0.1:3307 (port exposé par Docker).
  * Pour l'exécuter dans un conteneur, définir DB_HOST=db.
  */
 
@@ -61,6 +61,7 @@ function charger_env(string $chemin): array
 $env = charger_env(__DIR__ . '/../.env');
 
 $host = getenv('DB_HOST') ?: '127.0.0.1';
+$port = getenv('DB_PORT') ?: ($env['DB_PORT'] ?? '3307');
 $dbName = getenv('MYSQL_DATABASE') ?: ($env['MYSQL_DATABASE'] ?? 'e_commerce');
 $dbUser = getenv('MYSQL_USER') ?: ($env['MYSQL_USER'] ?? 'web_user');
 $dbPass = getenv('MYSQL_PASSWORD') ?: ($env['MYSQL_PASSWORD'] ?? '');
@@ -81,7 +82,7 @@ if ($nombre < 1 || $nombre > 500) {
 
 try {
     $pdo = new PDO(
-        'mysql:host=' . $host . ';dbname=' . $dbName . ';charset=utf8mb4',
+        'mysql:host=' . $host . ';port=' . $port . ';dbname=' . $dbName . ';charset=utf8mb4',
         $dbUser,
         $dbPass,
         [

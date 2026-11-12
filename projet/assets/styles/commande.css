@@ -1,0 +1,97 @@
+.commande-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(260px, 0.8fr);
+  gap: 2rem;
+}
+
+.commande-form fieldset {
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  margin: 0 0 1.25rem;
+  padding: 1rem;
+}
+
+.commande-form legend {
+  font-weight: 700;
+  padding: 0 0.35rem;
+}
+
+.commande-form textarea {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 0.6rem;
+  resize: vertical;
+}
+
+.aide-paiement {
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+.champs-paiement {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.champs-paiement label {
+  margin-top: 1rem;
+}
+
+.resume-commande {
+  align-self: start;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.resume-commande p {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 0.9rem;
+}
+
+.resume-total {
+  font-size: 1.1rem !important;
+}
+
+.confirmation-commande {
+  text-align: center;
+}
+
+.confirmation-icone {
+  display: inline-grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  background: #dcfce7;
+  color: #166534;
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.confirmation-commande dl {
+  margin: 2rem auto;
+  text-align: left;
+  max-width: 22rem;
+}
+
+.confirmation-commande dt {
+  color: #64748b;
+  font-size: 0.85rem;
+}
+
+.confirmation-commande dd {
+  margin: 0 0 1rem;
+}
+
+@media (max-width: 700px) {
+  .commande-layout {
+    grid-template-columns: 1fr;
+  }
+}

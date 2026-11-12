@@ -109,6 +109,47 @@ CREATE TABLE droit (
   CONSTRAINT fk_droit_role FOREIGN KEY (id_role)
     REFERENCES role (id_role) ON DELETE CASCADE
 );
+
+-- -----------------------------------------------------
+-- Commandes et lignes de commande
+-- -----------------------------------------------------
+CREATE TABLE commande (
+  commande_id       INT AUTO_INCREMENT,
+  numero_commande   VARCHAR(32) NOT NULL,
+  user_id           INT NOT NULL,
+  statut            ENUM('payee', 'annulee') NOT NULL DEFAULT 'payee',
+  adresse_livraison TEXT NOT NULL,
+  telephone         VARCHAR(20) NULL,
+  total_ht          DECIMAL(10,2) NOT NULL,
+  total_tva         DECIMAL(10,2) NOT NULL,
+  total_ttc         DECIMAL(10,2) NOT NULL,
+  mode_paiement     VARCHAR(30) NOT NULL DEFAULT 'carte',
+  carte_fin         CHAR(4) NULL,
+  date_commande     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (commande_id),
+  UNIQUE KEY uq_commande_numero (numero_commande),
+  INDEX idx_commande_user_date (user_id, date_commande),
+  CONSTRAINT fk_commande_user FOREIGN KEY (user_id)
+    REFERENCES `user` (user_id) ON DELETE RESTRICT
+);
+
+CREATE TABLE ligne_commande (
+  ligne_id          INT AUTO_INCREMENT,
+  commande_id       INT NOT NULL,
+  p_id              INT NULL,
+  designation       VARCHAR(255) NOT NULL,
+  quantite          INT NOT NULL,
+  prix_unitaire_ht  DECIMAL(10,2) NOT NULL,
+  taux_tva          DECIMAL(5,4) NOT NULL,
+  total_ligne_ttc   DECIMAL(10,2) NOT NULL,
+  PRIMARY KEY (ligne_id),
+  INDEX idx_ligne_commande (commande_id),
+  CONSTRAINT chk_ligne_quantite CHECK (quantite > 0),
+  CONSTRAINT fk_ligne_commande FOREIGN KEY (commande_id)
+    REFERENCES commande (commande_id) ON DELETE CASCADE,
+  CONSTRAINT fk_ligne_produit FOREIGN KEY (p_id)
+    REFERENCES produit (p_id) ON DELETE SET NULL
+);
  
 -- -----------------------------------------------------
 -- Données initiales

@@ -13,11 +13,13 @@ main {
 }
 
 .ligne-panier {
+  position: relative;
   display: grid;
   grid-template-columns: 72px minmax(0, 1fr) 110px auto;
   align-items: center;
   gap: 1rem;
   padding: 1rem;
+  padding-right: 4.25rem;
   border: 1px solid #e2e8f0;
   border-radius: 10px;
   background: #fff;
@@ -58,6 +60,25 @@ main {
 .ligne-panier strong {
   white-space: nowrap;
   color: #172033;
+}
+
+.bouton-supprimer {
+  position: absolute;
+  top: 50%;
+  right: 1rem;
+  transform: translateY(-50%);
+  width: auto;
+  margin: 0;
+  padding: 0.45rem 0.6rem;
+  background: #fee2e2;
+  color: #b91c1c;
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.bouton-supprimer:hover,
+.bouton-supprimer:focus-visible {
+  background: #fecaca;
 }
 
 .panier-actions {
@@ -114,6 +135,12 @@ button:disabled {
   .ligne-panier label,
   .ligne-panier strong {
     grid-column: 2;
+  }
+
+  .bouton-supprimer {
+    top: 1rem;
+    right: 1rem;
+    transform: none;
   }
 
   .panier-actions,

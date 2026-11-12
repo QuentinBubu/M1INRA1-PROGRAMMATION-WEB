@@ -28,7 +28,7 @@ docker compose up -d --build
 
 L'application est disponible sur : **http://localhost:8080**
 
-La base de données est initialisée automatiquement par `init.sql` au premier démarrage.
+La base de données est initialisée automatiquement par `init.sql` au premier démarrage. Si le volume MySQL existait déjà avant l’ajout du tunnel de paiement, appliquez aussi `migration_v2.sql`.
 
 ### Jeu de données de démonstration (Faker)
 
@@ -45,7 +45,7 @@ php scripts/seed_produits.php
 php scripts/seed_produits.php 50
 ```
 
-Le script est prévu pour être lancé depuis l'hôte. Il lit les identifiants MySQL dans `.env`, se connecte à `127.0.0.1:3306` par défaut et ajoute les produits sans supprimer les produits existants.
+Le script est prévu pour être lancé depuis l'hôte. Il lit les identifiants MySQL dans `.env`, se connecte à `127.0.0.1:3307` par défaut et ajoute les produits sans supprimer les produits existants. Pour utiliser un autre port local, définissez `DB_PORT` dans `.env`.
 
 ### Tests E2E avec Selenium
 
@@ -80,6 +80,8 @@ Si le volume MySQL existe déjà, exécuter la migration :
 docker compose exec -T db mysql --default-character-set=utf8mb4 \
   -uroot -p"$MYSQL_ROOT_PASSWORD" e_commerce < migration_v2.sql
 ```
+
+Cette migration crée également les tables `commande` et `ligne_commande` nécessaires au tunnel de paiement.
 
 ---
 
@@ -157,6 +159,28 @@ Les nouveaux comptes créés via l'inscription reçoivent automatiquement une li
 - Calcul de la TVA et du total TTC en session.
 - Mise à jour dynamique des sous-totaux et du total TTC lors du changement de quantité.
 
+### Tunnel de paiement
+- Connexion obligatoire pour passer commande.
+- Saisie et mémorisation de l’adresse de livraison dans le compte client.
+- Validation d’un paiement par carte en mode démonstration (aucun numéro complet ni cryptogramme n’est stocké).
+- Création transactionnelle de la commande, des lignes et décrément atomique du stock.
+- Confirmation avec numéro de commande et total payé.
+
+### API de paiement fictif
+L’endpoint `POST /api/paiement.php` utilise le panier de la session connectée et crée une commande après validation du paiement fictif.
+
+```json
+{
+  "adresse_livraison": "12 rue de Paris, 75001 Paris",
+  "telephone": "0601020304",
+  "numero_carte": "4242 4242 4242 4242",
+  "expiration": "03/30",
+  "cvv": "326"
+}
+```
+
+Le numéro complet de carte et le CVV ne sont jamais enregistrés. La réponse `201` contient le numéro de commande et le total TTC.
+
 ### Tests
 - Tests E2E Selenium + PHPUnit : connexion admin, contrôle d'accès, filtre catalogue, ajout produit, panier dynamique.
 - Fixtures produits créées et nettoyées automatiquement.
@@ -179,7 +203,6 @@ Les nouveaux comptes créés via l'inscription reçoivent automatiquement une li
 ## 6. Reste à faire (roadmap)
 
 - Frais de port.
-- Tunnel de commande (`commande` / `ligne_commande`).
 - API REST native + JSON Schema.
 - Crawler.
 - TD Laravel et TD API Platform.
