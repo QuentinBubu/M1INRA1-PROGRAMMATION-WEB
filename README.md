@@ -53,6 +53,24 @@ In order to ensure that the Laravel community is welcoming to all, please review
 
 If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
 
+## API tunnel de vente
+
+L'API permet de simuler une commande sans paiement réel :
+
+```http
+POST /api/vente
+Content-Type: application/json
+
+{
+  "nom": "Client Demo",
+  "email": "client@example.com",
+  "produit_id": 1,
+  "quantite": 1
+}
+```
+
+Le prix est calculé côté serveur et le stock est vérifié puis décrémenté. La commande peut ensuite être consultée avec `GET /api/vente/{id}`, confirmée avec `PUT /api/vente/{id}/confirmer` ou annulée avec `DELETE /api/vente/{id}`.
+
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
