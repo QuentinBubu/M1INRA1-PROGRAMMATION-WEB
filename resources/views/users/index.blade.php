@@ -24,6 +24,7 @@
                     <th class="border p-2">ID</th>
                     <th class="border p-2">Login</th>
                     <th class="border p-2">Email</th>
+                    <th class="border p-2">Rôle</th>
                     <th class="border p-2">Dernière connexion</th> <!-- Nouvelle colonne -->
                     <th class="border p-2">Actions</th>
                 </tr>
@@ -34,6 +35,7 @@
                     <td class="border p-2 text-center">{{ $user->user_id }}</td>
                     <td class="border p-2">{{ $user->user_login }}</td>
                     <td class="border p-2">{{ $user->user_mail }}</td>
+                    <td class="border p-2 text-center">{{ $user->role }}</td>
                     <td class="border p-2 text-center text-sm text-gray-600">{{ $user->user_date_login }}</td> <!-- Affichage en lecture seule -->
                     <td class="border p-2 text-center space-x-2">
                         <a href="{{ route('users.edit', $user->user_id) }}" class="bg-blue-500 text-white px-3 py-1 rounded text-sm">Éditer</a>

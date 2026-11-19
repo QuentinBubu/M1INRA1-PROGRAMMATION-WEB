@@ -30,13 +30,11 @@ class UserController extends Controller
     {
         $user = User::query()->findOrFail($user_id);
 
-        // On valide uniquement ce qui est modifiable
         $validated = $request->validate([
             'user_login' => 'required|string|max:255|unique:user,user_login,' . $user_id . ',user_id',
-            'user_mail' => 'required|email|max:255',
+            'role' => 'required|in:client,admin',
         ]);
 
-        // Seuls ces champs seront modifiés en base, les dates restent intouchées
         $user->update($validated);
 
         return redirect('/admin/users')->with('success', 'Utilisateur mis à jour avec succès.');

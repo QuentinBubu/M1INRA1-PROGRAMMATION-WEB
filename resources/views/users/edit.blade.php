@@ -25,7 +25,16 @@
 
             <div class="mb-4">
                 <label class="block text-gray-700 font-bold mb-2">Email :</label>
-                <input type="email" name="user_mail" value="{{ old('user_mail', $user->user_mail) }}" class="w-full border p-2 rounded" required>
+                <input type="email" value="{{ $user->user_mail }}" class="w-full border p-2 rounded bg-gray-100" readonly>
+                <p class="mt-1 text-sm text-gray-500">L’adresse e-mail est gérée par l’utilisateur lui-même.</p>
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-gray-700 font-bold mb-2" for="role">Rôle :</label>
+                <select id="role" name="role" class="w-full border p-2 rounded" required>
+                    <option value="client" @selected(old('role', $user->role) === 'client')>Client</option>
+                    <option value="admin" @selected(old('role', $user->role) === 'admin')>Administrateur</option>
+                </select>
             </div>
 
             <!-- Champ en lecture seule (Information pure) -->

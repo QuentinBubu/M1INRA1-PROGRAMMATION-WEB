@@ -1,0 +1,33 @@
+.sale-card {
+    max-width: 640px;
+}
+
+.sale-total {
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+.sale-total strong {
+    color: var(--primary-color);
+}
+
+.sale-card small {
+    color: #6c757d;
+}
+
+.feedback--success {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.feedback--error {
+    background: #f8d7da;
+    color: #842029;
+}
+
+.feedback--success button {
+    width: auto;
+    padding: 0.5rem 0.75rem;
+}

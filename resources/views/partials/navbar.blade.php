@@ -1,9 +1,14 @@
 <nav class="site-navbar" aria-label="Navigation principale">
-    <a class="site-navbar__brand" href="/addProduct">Gestion produits</a>
+    <a class="site-navbar__brand" href="/boutique">M1 Shop</a>
     <div class="site-navbar__links">
-        <a href="/addProduct">Ajouter</a>
-        <a href="/produits">Produits</a>
-        <a href="/admin/users">Utilisateurs</a>
+        <a href="/boutique">Boutique</a>
+        @if (auth()->user()?->role === 'admin')
+            <a href="/produits">Catalogue</a>
+            <a href="/addProduct">Ajouter un produit</a>
+            <a href="/admin/users">Utilisateurs</a>
+        @endif
+        <a href="#panier">Panier <span id="cart-count" class="cart-count">0</span></a>
+        <a href="/mes-commandes">Mes commandes</a>
         <button type="button" class="site-navbar__logout" data-logout>Se déconnecter</button>
     </div>
 </nav>

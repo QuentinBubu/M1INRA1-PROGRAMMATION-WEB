@@ -69,6 +69,7 @@ class AuthController extends Controller
             'user_password' => Hash::make($validated['password']),
             'user_compte_id' => $nextCompteId,
             'user_mail' => $validated['email'],
+            'role' => 'client',
         ]);
 
         return response()->json([

@@ -12,7 +12,9 @@ Route::middleware('web')->group(function () {
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/produits-form', [ProduitController::class, 'store']);
 
-Route::post('/vente', [VenteController::class, 'store']);
-Route::get('/vente/{commande}', [VenteController::class, 'show']);
-Route::put('/vente/{commande}/confirmer', [VenteController::class, 'confirm']);
-Route::delete('/vente/{commande}', [VenteController::class, 'cancel']);
+Route::middleware(['web', 'auth'])->group(function () {
+    Route::post('/vente', [VenteController::class, 'store']);
+    Route::get('/vente/{commande}', [VenteController::class, 'show']);
+    Route::put('/vente/{commande}/confirmer', [VenteController::class, 'confirm']);
+    Route::delete('/vente/{commande}', [VenteController::class, 'cancel']);
+});
